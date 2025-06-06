@@ -1,6 +1,6 @@
-# FlyLog FPV – Backend API
+# FlyLog FPV - Backend API
 
-**Backend API to register FPV flights, manage drones, and track pilot statistics.**
+**Backend API for registering FPV flights, managing drones, and tracking pilot statistics.**
 
 Built with [Bun.js](https://bun.sh/), [Hono](https://hono.dev/), and [MongoDB + Mongoose](https://mongoosejs.com/).
 
@@ -46,27 +46,55 @@ MONGO_URI=mongodb+srv://<your-uri>
 
 4. **Run the server**
 ```bash
-bun run index.ts
+bun run src/index.ts
 ```
 
 ---
 
-## 📬 API Endpoints (MVP)
+## 📬 API Endpoints
 
-| Method | Endpoint           | Description                      |
-|--------|--------------------|----------------------------------|
-| GET    | `/`                | Health check                     |
-| GET    | `/users/:id`       | Get user profile by ID           |
-| POST   | `/users`           | Create new user                  |
-| PUT    | `/users/:id`       | Update user profile              |
-| GET    | `/flights`         | Get all flights (public/recent)  |
-| POST   | `/flights`         | Log a new flight                 |
-| GET    | `/flights/:id`     | Get flight details               |
-| GET    | `/drones`          | List all drones (user's)         |
-| POST   | `/drones`          | Add a new drone                  |
-| GET    | `/leaderboard`     | Get global leaderboard           |
+### 🏥 Estado
+| Método | Endpoint           | Descripción                      | Autenticación |
+|--------|--------------------|----------------------------------|---------------|
+| GET    | `/health`          | Verificar estado del servidor    | No            |
 
-More endpoints coming soon (drones, leaderboard, zones...)
+### 🔐 Autenticación
+| Método | Endpoint           | Descripción                      | Autenticación |
+|--------|--------------------|----------------------------------|---------------|
+| POST   | `/auth/register`   | Register new user                | No            |
+| POST   | `/auth/login`      | Login user                       | No            |
+
+### 👤 Usuarios
+| Método | Endpoint           | Descripción                      | Autenticación |
+|--------|--------------------|----------------------------------|---------------|
+| GET    | `/users/profile`   | Get own profile                  | Required      |
+| GET    | `/users`           | List all users                   | Required      |
+| GET    | `/users/:id`       | Get user by ID                   | Required      |
+| PATCH  | `/users/:id`       | Update user                      | Required      |
+| DELETE | `/users/:id`       | Delete user                      | Required      |
+
+### ✈️ Drones
+| Método | Endpoint           | Descripción                      | Autenticación |
+|--------|--------------------|----------------------------------|---------------|
+| POST   | `/drones`          | Create new drone                 | Required      |
+| GET    | `/drones`          | List all drones                  | Required      |
+| GET    | `/drones/:id`      | Get drone by ID                  | Required      |
+| PATCH  | `/drones/:id`      | Update drone                     | Required      |
+| DELETE | `/drones/:id`      | Delete drone                     | Required      |
+| GET    | `/users/drones`    | List user's drones               | Required      |
+
+### 🛫 Vuelos
+| Método | Endpoint           | Descripción                      | Autenticación |
+|--------|--------------------|----------------------------------|---------------|
+| POST   | `/flights`         | Register new flight              | Required      |
+| GET    | `/flights`         | List all flights                 | Required      |
+| GET    | `/flights/:id`     | Get flight by ID                 | Required      |
+| PATCH  | `/flights/:id`     | Update flight                    | Required      |
+| DELETE | `/flights/:id`     | Delete flight                    | Required      |
+| GET    | `/users/flights`   | List user's flights              | Required      |
+
+
+More endpoints coming soon (leaderboard, zones, piezes...)
 
 ---
 

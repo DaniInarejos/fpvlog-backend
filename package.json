@@ -1,0 +1,23 @@
+{
+  "dependencies": {
+    "@hono/node-server": "^1.14.2",
+    "@hono/zod-validator": "^0.5.0",
+    "bcryptjs": "^3.0.2",
+    "dotenv": "^16.5.0",
+    "hono": "^4.7.10",
+    "jsonwebtoken": "^9.0.2",
+    "mongoose": "^8.15.0",
+    "zod": "^3.25.23"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^3.0.0",
+    "@types/bun": "latest",
+    "@types/jsonwebtoken": "^9.0.9",
+    "@types/node": "^22.15.21",
+    "typescript": "^5.8.3"
+  },
+  "name": "fpvlog-backend",
+  "module": "src/index.ts",
+  "type": "module",
+  "private": true
+}
