@@ -2,6 +2,7 @@ import { Context, Next } from 'hono'
 import authService from '../modules/auth/auth.services'
 
 export async function authMiddleware(context: Context, next: Next) {
+
   try {
     const authHeader = context.req.header('Authorization')
     
@@ -14,7 +15,6 @@ export async function authMiddleware(context: Context, next: Next) {
     
     // Añadir el usuario al contexto
     context.set('user', user)
-    
     await next()
   } catch (error) {
     return context.json({ error: 'No autorizado' }, 401)

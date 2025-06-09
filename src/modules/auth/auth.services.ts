@@ -2,6 +2,7 @@ import jwt from 'jsonwebtoken'
 import { IUser } from '../users/users.models'
 import UserModel from '../users/users.models'
 import { LoginDTO, RegisterDTO } from './auth.dto'
+import { getUserByIdService } from '../users/users.services'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 const JWT_EXPIRES_IN = '24h'
@@ -64,10 +65,10 @@ export const login = async (credentials: LoginDTO): Promise<{ user: IUser; token
 
 export const validateToken = async (token: string): Promise<IUser> => {
     const decoded = jwt.verify(token, JWT_SECRET) as { id: string }
-    const user = await UserModel.findById(decoded.id).select('-password')
+    const user = await getUserByIdService(decoded.id)
     
     if (!user) {
-      throw new Error('User not found')
+        throw new Error('User not found')
     }
 
     return user

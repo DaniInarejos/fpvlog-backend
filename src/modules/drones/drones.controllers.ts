@@ -11,10 +11,10 @@ import { getErrorMessage } from '../../utils/error'
 
 export async function createDroneController(context: Context): Promise<Response> {
   try {
-    const data = await context.req.json()
+    const droneTuCreate = await context.req.json()
     const user = context.get('user')
-    const drone = await createDroneService({ ...data, userId: user._id })
-    return context.json(drone, 201)
+    const droneCreated = await createDroneService({ ...droneTuCreate, userId: user._id })
+    return context.json(droneCreated, 201)
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 400)
   }
