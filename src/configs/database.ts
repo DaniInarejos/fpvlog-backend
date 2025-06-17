@@ -1,4 +1,5 @@
 import mongoose from 'mongoose'
+import { logger } from '../utils/logger'
 
 interface DatabaseConfig {
   maxRetries: number
@@ -24,7 +25,7 @@ const connectWithRetry = async (retryCount = 0): Promise<void> => {
     const mongoUri = process.env.MONGO_URI
     
     if (!mongoUri) {
-      throw new Error('Variable de entorno MONGO_URI no definida')
+      throw new Error('MONGO_URI environment variable not defined')
     }
 
     await mongoose.connect(mongoUri, {
@@ -32,34 +33,34 @@ const connectWithRetry = async (retryCount = 0): Promise<void> => {
       heartbeatFrequencyMS: 2000,
     })
 
-    console.log('✅ MongoDB conectado exitosamente')
+    logger.info('✅ MongoDB connected successfully')
   } catch (error) {
     const formattedError = formatError(error)
-    console.error(`❌ Intento de conexión ${retryCount + 1}/${dbConfig.maxRetries + 1} falló: ${formattedError}`)
+    logger.error(`❌ Connection attempt ${retryCount + 1}/${dbConfig.maxRetries + 1} failed: ${formattedError}`)
 
     if (retryCount < dbConfig.maxRetries) {
-      console.log(`🔄 Reintentando conexión en ${dbConfig.retryInterval / 1000} segundos...`)
+      logger.info(`🔄 Retrying connection in ${dbConfig.retryInterval / 1000} seconds...`)
       await new Promise(resolve => setTimeout(resolve, dbConfig.retryInterval))
       return connectWithRetry(retryCount + 1)
     }
 
-    console.error('❌ Número máximo de intentos alcanzado. Saliendo del proceso.')
+    logger.error('❌ Maximum number of attempts reached. Exiting process.')
     process.exit(1)
   }
 }
 
 mongoose.connection.on('disconnected', () => {
-  console.log('🔌 MongoDB desconectado')
+  logger.info('🔌 MongoDB disconnected')
 })
 
 mongoose.connection.on('error', (error) => {
   const formattedError = formatError(error)
-  console.error('🚨 Error de conexión MongoDB:', formattedError)
+  logger.error('🚨 MongoDB connection error:', formattedError)
 })
 
 process.on('SIGINT', async () => {
   await mongoose.connection.close()
-  console.log('Conexión a MongoDB cerrada por terminación de la aplicación')
+  logger.info('MongoDB connection closed due to application termination')
   process.exit(0)
 })
 

@@ -33,7 +33,6 @@ export async function updateUserController(context: Context): Promise<Response> 
   try {
     const id = context.req.param('id')
     const currentUser = context.get('user')
-    
     if (currentUser._id.toString() !== id) {
       return context.json({ error: 'Not authorized to update this user' }, 403)
     }

@@ -31,8 +31,15 @@ export async function getAllDronesController(context: Context): Promise<Response
 
 export async function getDronesByUserController(context: Context): Promise<Response> {
   try {
-    const user = context.get('user')
-    const drones = await getDronesByUserService(user._id)
+    const userId = context.req.param('id')
+    const currentUser = context.get('user')
+    
+    // Verificar que el usuario autenticado solo pueda acceder a sus propios drones
+    if (currentUser._id.toString() !== userId) {
+      return context.json({ error: 'Not authorized to access this user\'s drones' }, 403)
+    }
+    
+    const drones = await getDronesByUserService(currentUser._id)
     return context.json(drones)
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 500)

@@ -65,13 +65,15 @@ bun run src/index.ts
 | POST   | `/auth/login`      | Login user                       | No            |
 
 ### 👤 Usuarios
-| Método | Endpoint           | Descripción                      | Autenticación |
-|--------|--------------------|----------------------------------|---------------|
-| GET    | `/users/profile`   | Get own profile                  | Required      |
-| GET    | `/users`           | List all users                   | Required      |
-| GET    | `/users/:id`       | Get user by ID                   | Required      |
-| PATCH  | `/users/:id`       | Update user                      | Required      |
-| DELETE | `/users/:id`       | Delete user                      | Required      |
+| Método | Endpoint            | Descripción                      | Autenticación |
+|--------|---------------------|----------------------------------|---------------|
+| GET    | `/users/profile`    | Get own profile                  | Required      |
+| GET    | `/users`            | List all users                   | Required      |
+| GET    | `/users/:id`        | Get user by ID                   | Required      |
+| PATCH  | `/users/:id`        | Update user                      | Required      |
+| DELETE | `/users/:id`        | Delete user                      | Required      |
+| GET    | `/users/:id/drones` | List user's drones               | Required      |
+| GET    | `/users/:id/flights`| List user's flights              | Required      |
 
 ### ✈️ Drones
 | Método | Endpoint           | Descripción                      | Autenticación |
@@ -81,7 +83,24 @@ bun run src/index.ts
 | GET    | `/drones/:id`      | Get drone by ID                  | Required      |
 | PATCH  | `/drones/:id`      | Update drone                     | Required      |
 | DELETE | `/drones/:id`      | Delete drone                     | Required      |
-| GET    | `/users/drones`    | List user's drones               | Required      |
+
+### 🏷️ Tipos de Drones
+| Método | Endpoint           | Descripción                      | Autenticación |
+|--------|--------------------|----------------------------------|---------------|
+| POST   | `/drone-types`     | Create new drone type            | Required      |
+| GET    | `/drone-types`     | List all drone types             | Required      |
+| GET    | `/drone-types/:id` | Get drone type by ID             | Required      |
+| PATCH  | `/drone-types/:id` | Update drone type                | Required      |
+| DELETE | `/drone-types/:id` | Delete drone type                | Required      |
+
+### 🏭 Marcas de Drones
+| Método | Endpoint           | Descripción                      | Autenticación |
+|--------|--------------------|----------------------------------|---------------|
+| POST   | `/drone-brands`    | Create new drone brand           | Required      |
+| GET    | `/drone-brands`    | List all drone brands            | Required      |
+| GET    | `/drone-brands/:id`| Get drone brand by ID            | Required      |
+| PATCH  | `/drone-brands/:id`| Update drone brand               | Required      |
+| DELETE | `/drone-brands/:id`| Delete drone brand               | Required      |
 
 ### 🛫 Vuelos
 | Método | Endpoint           | Descripción                      | Autenticación |
@@ -91,7 +110,7 @@ bun run src/index.ts
 | GET    | `/flights/:id`     | Get flight by ID                 | Required      |
 | PATCH  | `/flights/:id`     | Update flight                    | Required      |
 | DELETE | `/flights/:id`     | Delete flight                    | Required      |
-| GET    | `/users/flights`   | List user's flights              | Required      |
+
 
 
 More endpoints coming soon (leaderboard, zones, piezes...)

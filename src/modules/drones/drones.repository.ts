@@ -35,7 +35,7 @@ export async function getDronesByUserRepository(userId: Types.ObjectId): Promise
 
 export async function getDroneByIdRepository(id: string): Promise<IDrone | null> {
   if (!Types.ObjectId.isValid(id)) {
-    throw new Error('ID de drone inválido')
+    throw new Error('Invalid drone ID')
   }
   
   const cacheKey = `drone:${id}`
@@ -47,7 +47,7 @@ export async function getDroneByIdRepository(id: string): Promise<IDrone | null>
 
 export async function updateDroneRepository(id: string, data: Partial<IDrone>): Promise<IDrone | null> {
   if (!Types.ObjectId.isValid(id)) {
-    throw new Error('ID de drone inválido')
+    throw new Error('Invalid drone ID')
   }
   
   const result = await DroneModel.findByIdAndUpdate(
@@ -69,7 +69,7 @@ export async function updateDroneRepository(id: string, data: Partial<IDrone>): 
 
 export async function deleteDroneRepository(id: string): Promise<boolean> {
   if (!Types.ObjectId.isValid(id)) {
-    throw new Error('ID de drone inválido')
+    throw new Error('Invalid drone ID')
   }
   
   const drone = await DroneModel.findById(id)
@@ -84,4 +84,28 @@ export async function deleteDroneRepository(id: string): Promise<boolean> {
   }
   
   return result !== null
+}
+
+export class DroneRepository {
+  async findAll(): Promise<IDrone[]> {
+    return await DroneModel.find()
+      .populate('typeId', 'name category')
+      .populate('brandId', 'name country')
+      .populate('userId', 'name email')
+      .sort({ createdAt: -1 })
+  }
+
+  async findById(id: string): Promise<IDrone | null> {
+    return await DroneModel.findById(id)
+      .populate('typeId', 'name category description')
+      .populate('brandId', 'name country website')
+      .populate('userId', 'name email')
+  }
+
+  async findByUserId(userId: string): Promise<IDrone[]> {
+    return await DroneModel.find({ userId })
+      .populate('typeId', 'name category')
+      .populate('brandId', 'name country')
+      .sort({ createdAt: -1 })
+  }
 }

@@ -38,7 +38,7 @@ export async function getFlightsByUserRepository(userId: Types.ObjectId): Promis
 
 export async function getFlightByIdRepository(id: string): Promise<IFlight | null> {
   if (!Types.ObjectId.isValid(id)) {
-    throw new Error('ID de vuelo inválido')
+    throw new Error('Invalid flight ID')
   }
   
   const cacheKey = `flight:${id}`
@@ -50,7 +50,7 @@ export async function getFlightByIdRepository(id: string): Promise<IFlight | nul
 
 export async function updateFlightRepository(id: string, data: Partial<IFlight>): Promise<IFlight | null> {
   if (!Types.ObjectId.isValid(id)) {
-    throw new Error('ID de vuelo inválido')
+    throw new Error('Invalid flight ID')
   }
   
   const result = await FlightModel.findByIdAndUpdate(
@@ -72,7 +72,7 @@ export async function updateFlightRepository(id: string, data: Partial<IFlight>)
 
 export async function deleteFlightRepository(id: string): Promise<boolean> {
   if (!Types.ObjectId.isValid(id)) {
-    throw new Error('ID de vuelo inválido')
+    throw new Error('Invalid flight ID')
   }
   
   const flight = await FlightModel.findById(id)

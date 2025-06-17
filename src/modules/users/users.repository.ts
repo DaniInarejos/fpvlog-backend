@@ -21,7 +21,7 @@ export async function getUserByIdRepository(id: string): Promise<IUser | null> {
   const cacheKey = `user:${id}`
   return await cacheService.loadData<IUser | null>(
     cacheKey,
-    async () => await UserModel.findById(id).select('-password -_id -__v')
+    async () => await UserModel.findById(id).select('-password -__v')
   )
 }
 

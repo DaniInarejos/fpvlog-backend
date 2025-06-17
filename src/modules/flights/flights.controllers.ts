@@ -31,8 +31,15 @@ export async function getAllFlightsController(context: Context): Promise<Respons
 
 export async function getFlightsByUserController(context: Context): Promise<Response> {
   try {
-    const user = context.get('user')
-    const flights = await getFlightsByUserService(user._id)
+    const userId = context.req.param('id')
+    const currentUser = context.get('user')
+    
+    // Verificar que el usuario autenticado solo pueda acceder a sus propios vuelos
+    if (currentUser._id.toString() !== userId) {
+      return context.json({ error: 'Not authorized to access this user\'s flights' }, 403)
+    }
+    
+    const flights = await getFlightsByUserService(currentUser._id)
     return context.json(flights)
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 500)

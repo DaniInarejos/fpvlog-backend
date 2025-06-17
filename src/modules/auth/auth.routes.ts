@@ -1,6 +1,6 @@
 import { Hono } from 'hono'
 import { zValidator } from '@hono/zod-validator'
-import authSchemas  from './auth.schemas'
+import authSchemas from './auth.schemas'
 import authController from './auth.controllers'
 
 const auth = new Hono()

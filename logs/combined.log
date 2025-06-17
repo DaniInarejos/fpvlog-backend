@@ -1,0 +1,26 @@
+{"level":"info","message":"✅ MongoDB conectado exitosamente","timestamp":"2025-06-14T18:25:48.728Z"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-14T18:25:48.746Z"}
+{"level":"info","message":"API running on http://localhost:3000","timestamp":"2025-06-14T18:25:48.747Z"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-14T18:27:50.809Z"}
+{"level":"info","message":"✅ MongoDB conectado exitosamente","timestamp":"2025-06-14T18:27:51.096Z"}
+{"level":"info","message":"API running on http://localhost:3000","timestamp":"2025-06-14T18:27:51.130Z"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-14T18:30:54.454Z"}
+{"level":"info","message":"✅ MongoDB conectado exitosamente","timestamp":"2025-06-14T18:30:54.737Z"}
+{"level":"info","message":"API running on http://localhost:3000","timestamp":"2025-06-14T18:30:54.747Z"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-14T18:33:30.316Z"}
+{"level":"info","message":"✅ MongoDB conectado exitosamente","timestamp":"2025-06-14T18:33:30.634Z"}
+{"level":"info","message":"API running on http://localhost:3000","timestamp":"2025-06-14T18:33:30.656Z"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-14T18:40:42.072Z"}
+{"level":"info","message":"✅ MongoDB conectado exitosamente","timestamp":"2025-06-14T18:40:42.315Z"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-14T18:40:53.020Z"}
+{"level":"info","message":"✅ MongoDB conectado exitosamente","timestamp":"2025-06-14T18:40:53.331Z"}
+{"level":"info","message":"API running on http://localhost:3000","timestamp":"2025-06-14T18:40:53.341Z"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-17T15:31:10.898Z"}
+{"level":"info","message":"✅ MongoDB connected successfully","timestamp":"2025-06-17T15:31:11.195Z"}
+{"level":"info","message":"API running on http://localhost:3000","timestamp":"2025-06-17T15:31:11.218Z"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-17 15:36:15.499"}
+{"level":"info","message":"✅ MongoDB connected successfully","timestamp":"2025-06-17 15:36:15.798"}
+{"level":"info","message":"API running on http://localhost:3000","timestamp":"2025-06-17 15:36:15.816"}
+{"level":"info","message":"✅ Redis connection established successfully","timestamp":"2025-06-17T16:03:09.488Z"}
+{"level":"info","message":"✅ MongoDB connected successfully","timestamp":"2025-06-17T16:03:09.802Z"}
+{"level":"info","message":"API running on http://localhost:3000","timestamp":"2025-06-17T16:03:09.812Z"}

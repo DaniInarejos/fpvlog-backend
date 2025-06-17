@@ -12,9 +12,9 @@ const router = new Hono()
 
 router.use(authMiddleware)
 
-router.post('/', createDroneController)
 router.get('/', getAllDronesController)
 router.get('/:id', getDroneByIdController)
+router.post('/', createDroneController)
 router.patch('/:id', updateDroneController)
 router.delete('/:id', deleteDroneController)
 

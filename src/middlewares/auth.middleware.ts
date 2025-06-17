@@ -12,8 +12,6 @@ export async function authMiddleware(context: Context, next: Next) {
 
     const token = authHeader.split(' ')[1]
     const user = await authService.validateToken(token)
-    
-    // Añadir el usuario al contexto
     context.set('user', user)
     await next()
   } catch (error) {

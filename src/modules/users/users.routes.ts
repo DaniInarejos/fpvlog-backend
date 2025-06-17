@@ -19,7 +19,7 @@ router.get('/', getAllUsersController)
 router.get('/:id', getUserByIdController)
 router.patch('/:id', updateUserController)
 router.delete('/:id', deleteUserController)
-router.get('/drones', getDronesByUserController)
-router.get('/flights', getFlightsByUserController)
+router.get('/:id/drones', getDronesByUserController)
+router.get('/:id/flights', getFlightsByUserController)
 
 export default router

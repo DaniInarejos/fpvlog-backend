@@ -1,5 +1,6 @@
 import { Redis } from '@upstash/redis'
-import { config } from './index'
+import { logger } from '../utils/logger'
+import  config  from './index'
 
 const redis = new Redis({
   url: config.redis.url,
@@ -10,9 +11,9 @@ const redis = new Redis({
 async function testConnection() {
   try {
     await redis.ping()
-    console.log('✅ Redis connection established successfully')
+    logger.info('✅ Redis connection established successfully')
   } catch (error) {
-    console.error('❌ Redis connection failed:', error)
+    logger.error('❌ Redis connection failed:', error)
     process.exit(1)
   }
 }
