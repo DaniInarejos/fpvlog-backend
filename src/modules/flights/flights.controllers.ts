@@ -34,7 +34,6 @@ export async function getFlightsByUserController(context: Context): Promise<Resp
     const userId = context.req.param('id')
     const currentUser = context.get('user')
     
-    // Verificar que el usuario autenticado solo pueda acceder a sus propios vuelos
     if (currentUser._id.toString() !== userId) {
       return context.json({ error: 'Not authorized to access this user\'s flights' }, 403)
     }

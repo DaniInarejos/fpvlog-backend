@@ -1,6 +1,6 @@
 import { Context } from 'hono'
 import authSertivce from './auth.services'
-import { getErrorMessage } from '@utils/error'
+import { getErrorMessage } from '../../utils/error'
 
 export async function registerUser(context: Context) {
   try {

@@ -1,4 +1,4 @@
-import { logger } from '@utils/logger'
+import { logger } from '../utils/logger'
 import { Context, Next } from 'hono'
 
 export const emailNormalizeMiddleware = async (context: Context, next: Next) => {
@@ -19,5 +19,5 @@ export const emailNormalizeMiddleware = async (context: Context, next: Next) => 
       }
     }
   }
-   next()
+  await next()
 }

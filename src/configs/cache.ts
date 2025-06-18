@@ -25,7 +25,7 @@ interface CacheOptions {
 }
 
 export class CacheService {
-  private defaultTTL = config.redis.ttl // Usar el TTL de la configuración
+  private defaultTTL = config.redis.ttl 
 
   async get<T>(key: string): Promise<T | null> {
     const value = await redis.get(key)
