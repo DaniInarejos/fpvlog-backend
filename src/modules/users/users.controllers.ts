@@ -5,7 +5,7 @@ import {
   updateUserService, 
   deleteUserService 
 } from './users.services'
-import {getErrorMessage } from '../../utils/error'
+import { getErrorMessage } from '../../utils/error'
 
 export async function getAllUsersController(context: Context): Promise<Response> {
   try {
@@ -77,6 +77,7 @@ export const createUserController = async (context: Context): Promise<Response> 
 }
 
 export const getProfileController = async (context: Context): Promise<Response> => {
-    const user = context.get('user')
-    return context.json(user)
+    const {_id:id} = context.get('user')
+    const user = await getUserByIdService(id) 
+       return context.json(user)
 }

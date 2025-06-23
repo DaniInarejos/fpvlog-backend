@@ -1,0 +1,799 @@
+{
+  "info": {
+    "name": "FPV Log Backend API v1.4.1",
+    "description": "Complete API collection for FPV Log Backend with followers system and profile picture upload",
+    "version": "1.4.1",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "targetUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "droneTypeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "droneBrandId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "droneId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "flightId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('authToken', response.token);",
+                  "    }",
+                  "    if (response.user && response.user._id) {",
+                  "        pm.collectionVariables.set('userId', response.user._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Test\",\n  \"lastName\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('authToken', response.token);",
+                  "    }",
+                  "    if (response.user && response.user._id) {",
+                  "        pm.collectionVariables.set('userId', response.user._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Upload Profile Picture",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "profilePicture",
+                  "type": "file",
+                  "src": "",
+                  "description": "Profile picture image file (JPG, PNG, etc.)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/upload-profile-picture",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "upload-profile-picture"]
+            },
+            "description": "Upload a profile picture for the authenticated user. Accepts image files up to 5MB."
+          }
+        },
+        {
+          "name": "Get All Users",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["users"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update User",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"lastName\": \"Updated LastName\",\n  \"privacySettings\": {\n    \"allowFollowersToSeeFlights\": true,\n    \"allowFollowersToSeeDrones\": true,\n    \"profileVisibility\": \"public\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get User Drones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/drones",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "drones"]
+            }
+          }
+        },
+        {
+          "name": "Get User Flights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{userId}}/flights",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{userId}}", "flights"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Followers",
+      "item": [
+        {
+          "name": "Follow User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "follow"]
+            }
+          }
+        },
+        {
+          "name": "Unfollow User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "follow"]
+            }
+          }
+        },
+        {
+          "name": "Get User Followers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/followers?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "followers"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Following",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/following?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "following"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Check if Following",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/is-following",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "is-following"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Flights",
+      "item": [
+        {
+          "name": "Get All Flights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Visible Flights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights/visible?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights", "visible"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get User Visible Flights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights/user/{{targetUserId}}/visible?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights", "user", "{{targetUserId}}", "visible"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Flight by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights/{{flightId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights", "{{flightId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Flight",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Amazing FPV Flight\",\n  \"description\": \"Great flight in the mountains\",\n  \"location\": \"Mountain Range\",\n  \"duration\": 15,\n  \"distance\": 2.5,\n  \"maxAltitude\": 120,\n  \"drone\": \"{{droneId}}\",\n  \"visibility\": {\n    \"isVisibleToFollowers\": true,\n    \"isPublic\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flights",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights"]
+            }
+          }
+        },
+        {
+          "name": "Update Flight",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Flight Title\",\n  \"description\": \"Updated description\",\n  \"visibility\": {\n    \"isVisibleToFollowers\": false,\n    \"isPublic\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flights/{{flightId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights", "{{flightId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Flight",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights/{{flightId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights", "{{flightId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drones",
+      "item": [
+        {
+          "name": "Get All Drones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drones?page=1&limit=20",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones"],
+              "query": [
+                {
+                  "key": "page",
+                  "value": "1"
+                },
+                {
+                  "key": "limit",
+                  "value": "20"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Drone by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drones/{{droneId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones", "{{droneId}}"]
+            }
+          }
+        },
+        {
+          "name": "Create Drone",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Racing Drone\",\n  \"model\": \"Custom Build\",\n  \"droneType\": \"{{droneTypeId}}\",\n  \"droneBrand\": \"{{droneBrandId}}\",\n  \"visibility\": {\n    \"isVisibleToFollowers\": true,\n    \"isPublic\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drones",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones"]
+            }
+          }
+        },
+        {
+          "name": "Update Drone",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Drone Name\",\n  \"model\": \"Updated Model\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drones/{{droneId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones", "{{droneId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Drone",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drones/{{droneId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones", "{{droneId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drone Types",
+      "item": [
+        {
+          "name": "Get All Drone Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types"]
+            }
+          }
+        },
+        {
+          "name": "Get Drone Type by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-types/{{droneTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types", "{{droneTypeId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Drone Types by Category",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-types/category/racing",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types", "category", "racing"]
+            }
+          }
+        },
+        {
+          "name": "Create Drone Type",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Racing Drone\",\n  \"category\": \"racing\",\n  \"description\": \"High-speed racing drone\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drone-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types"]
+            }
+          }
+        },
+        {
+          "name": "Update Drone Type",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Racing Drone\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drone-types/{{droneTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types", "{{droneTypeId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Drone Type",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-types/{{droneTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types", "{{droneTypeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drone Brands",
+      "item": [
+        {
+          "name": "Get All Drone Brands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands"]
+            }
+          }
+        },
+        {
+          "name": "Get Drone Brand by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands/{{droneBrandId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands", "{{droneBrandId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get Drone Brands by Country",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands/country/USA",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands", "country", "USA"]
+            }
+          }
+        },
+        {
+          "name": "Create Drone Brand",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"DJI\",\n  \"country\": \"China\",\n  \"website\": \"https://www.dji.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands"]
+            }
+          }
+        },
+        {
+          "name": "Update Drone Brand",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Brand Name\",\n  \"website\": \"https://updated-website.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands/{{droneBrandId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands", "{{droneBrandId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Drone Brand",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands/{{droneBrandId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands", "{{droneBrandId}}"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

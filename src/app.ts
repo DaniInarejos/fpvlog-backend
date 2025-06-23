@@ -10,6 +10,7 @@ import droneRoutes from './modules/drones/drones.routes'
 import flightRoutes from './modules/flights/flights.routes'
 import droneTypesRoutes from './modules/drone-types/drone-types.routes'
 import droneBrandsRoutes from './modules/drone-brands/drone-brands.routes'
+import followersRoutes from './modules/followers/followers.routes'
 
 export const app = new Hono()
 
@@ -18,6 +19,7 @@ app.use('*', logger())
 app.use('*', cors())
 app.use('*', emailNormalizeMiddleware)
 
+
 app.route('/health', healtRoutes)
 app.route('/auth', authRoutes)
 app.route('/users', userRoutes)
@@ -25,6 +27,7 @@ app.route('/flights', flightRoutes)
 app.route('/drones', droneRoutes)
 app.route('/drone-types', droneTypesRoutes)
 app.route('/drone-brands', droneBrandsRoutes)
+app.route('/followers', followersRoutes)
 
 export default app
 

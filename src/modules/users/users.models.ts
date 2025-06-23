@@ -1,4 +1,4 @@
-import { Schema, model, Document } from 'mongoose'
+import { Schema, model, Document, Types } from 'mongoose'
 import bcrypt from 'bcryptjs'
 
 export interface IUser extends Document {
@@ -9,6 +9,14 @@ export interface IUser extends Document {
   createdAt: Date
   name: string
   lastName: string
+  profilePicture?: string 
+  followers: Types.ObjectId[]
+  following: Types.ObjectId[]
+  privacySettings: {
+    allowFollowersToSeeFlights: boolean
+    allowFollowersToSeeDrones: boolean
+    profileVisibility: 'public' | 'followers' | 'private'
+  }
   comparePassword(candidatePassword: string): Promise<boolean>
 }
 
@@ -33,6 +41,43 @@ const userSchema = new Schema<IUser>({
   points: { 
     type: Number, 
     default: 0 
+  },
+  name: {
+    type: String,
+    required: [true, 'El nombre es requerido']
+  },
+  lastName: {
+    type: String,
+    required: [true, 'El apellido es requerido']
+  },
+  profilePicture: {
+    type: String,
+    required: false,
+    default: null
+  },
+  // Nuevos campos
+  followers: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  following: [{
+    type: Schema.Types.ObjectId,
+    ref: 'User'
+  }],
+  privacySettings: {
+    allowFollowersToSeeFlights: {
+      type: Boolean,
+      default: true
+    },
+    allowFollowersToSeeDrones: {
+      type: Boolean,
+      default: true
+    },
+    profileVisibility: {
+      type: String,
+      enum: ['public', 'followers', 'private'],
+      default: 'public'
+    }
   },
   createdAt: { 
     type: Date, 
