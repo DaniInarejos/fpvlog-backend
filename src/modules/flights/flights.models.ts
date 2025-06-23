@@ -12,6 +12,10 @@ export interface IFlight extends Document {
   userId: Types.ObjectId
   droneId: Types.ObjectId
   createdAt: Date
+  visibility: {
+    isVisibleToFollowers: boolean
+    isPublic: boolean
+  }
 }
 
 const flightSchema = new Schema<IFlight>({
@@ -53,6 +57,16 @@ const flightSchema = new Schema<IFlight>({
     type: Schema.Types.ObjectId,
     ref: 'Drone',
     required: [true, 'El ID del drone es requerido']
+  },
+  visibility: {
+    isVisibleToFollowers: {
+      type: Boolean,
+      default: true
+    },
+    isPublic: {
+      type: Boolean,
+      default: false
+    }
   },
   createdAt: { 
     type: Date, 

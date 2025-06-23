@@ -6,29 +6,98 @@ import {
   updateFlightRepository, 
   deleteFlightRepository,
   createFlightRepository,
-  getFlightsByUserRepository
+  getFlightsByUserRepository,
+  getVisibleFlightsRepository
 } from './flights.repository'
+import { checkIsFollowingService, getFollowingService } from '../followers/followers.services'
+import { getUserByIdService } from '../users/users.services'
+import { logger } from '../../utils/logger'
 
-export async function createFlightService(data: Partial<IFlight>): Promise<IFlight> {
+export const createFlightService = async (data: Partial<IFlight>): Promise<IFlight> => {
   return await createFlightRepository(data)
 }
 
-export async function getAllFlightsService(): Promise<IFlight[]> {
+export const getAllFlightsService = async (): Promise<IFlight[]> => {
   return await getAllFlightsRepository()
 }
 
-export async function getFlightsByUserService(userId: Types.ObjectId): Promise<IFlight[]> {
+export const getFlightsByUserService = async (userId: Types.ObjectId): Promise<IFlight[]> => {
   return await getFlightsByUserRepository(userId)
 }
 
-export async function getFlightByIdService(id: string): Promise<IFlight | null> {
+export const getFlightByIdService = async (id: string): Promise<IFlight | null> => {
   return await getFlightByIdRepository(id)
 }
 
-export async function updateFlightService(id: string, data: Partial<IFlight>): Promise<IFlight | null> {
+export const updateFlightService = async (id: string, data: Partial<IFlight>): Promise<IFlight | null> => {
   return await updateFlightRepository(id, data)
 }
 
-export async function deleteFlightService(id: string): Promise<boolean> {
+export const deleteFlightService = async (id: string): Promise<boolean> => {
   return await deleteFlightRepository(id)
+}
+
+export const getVisibleFlightsService = async (
+  viewerId: string, 
+  ownerId?: string, 
+  page: number = 1, 
+  limit: number = 20
+) => {
+  try {
+    const skip = (page - 1) * limit
+    let query: any = {}
+
+    if (ownerId) {
+      // Ver vuelos de un usuario específico
+      query.userId = ownerId
+      
+      if (viewerId !== ownerId) {
+        // No es el propietario, verificar permisos
+        const owner = await getUserByIdService(ownerId)
+        const userIsFollowing = await checkIsFollowingService(viewerId, ownerId)
+        
+        if (!owner) {
+          throw new Error('Usuario no encontrado')
+        }
+
+        // Aplicar filtros de privacidad
+        if (userIsFollowing && owner.privacySettings?.allowFollowersToSeeFlights) {
+          query['visibility.isVisibleToFollowers'] = true
+        } else {
+          query['visibility.isPublic'] = true
+        }
+      }
+    } else {
+      // Ver vuelos de usuarios que sigue
+      const followingResult = await getFollowingService(viewerId, 1, 1000)
+      const followingIds = followingResult.following.map((user: any) => user._id)
+      
+      query = {
+        $or: [
+          { userId: viewerId }, // Sus propios vuelos
+          {
+            userId: { $in: followingIds },
+            'visibility.isVisibleToFollowers': true
+          },
+          { 'visibility.isPublic': true }
+        ]
+      }
+    }
+
+    // Usar el repository en lugar de acceder directamente al modelo
+    const result = await getVisibleFlightsRepository(query, skip, limit)
+
+    return {
+      flights: result.flights,
+      pagination: {
+        page,
+        limit,
+        total: result.total,
+        pages: Math.ceil(result.total / limit)
+      }
+    }
+  } catch (error) {
+    logger.error('Error al obtener vuelos visibles:', error)
+    throw error
+  }
 }

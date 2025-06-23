@@ -12,6 +12,10 @@ export interface IDrone extends Document<any> {
   description?: string
   userId: Types.ObjectId
   createdAt: Date
+  visibility: {
+    isVisibleToFollowers: boolean
+    isPublic: boolean
+  }
 }
 
 const droneSchema = new Schema<IDrone>({
@@ -58,6 +62,16 @@ const droneSchema = new Schema<IDrone>({
     type: Schema.Types.ObjectId,
     ref: 'User',
     required: [true, 'El ID del usuario es requerido']
+  },
+  visibility: {
+    isVisibleToFollowers: {
+      type: Boolean,
+      default: true
+    },
+    isPublic: {
+      type: Boolean,
+      default: false
+    }
   },
   createdAt: { 
     type: Date, 

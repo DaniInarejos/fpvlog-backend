@@ -15,6 +15,7 @@ const router = new Hono()
 router.use(authMiddleware)
 
 router.get('/profile', getProfileController)
+
 router.get('/', getAllUsersController)
 router.get('/:id', getUserByIdController)
 router.patch('/:id', updateUserController)

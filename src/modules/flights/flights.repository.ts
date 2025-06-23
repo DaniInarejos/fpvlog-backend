@@ -90,3 +90,24 @@ export async function deleteFlightRepository(id: string): Promise<boolean> {
   
   return result !== null
 }
+
+export const getVisibleFlightsRepository = async (
+  query: any,
+  skip: number,
+  limit: number
+) => {
+  const flights = await FlightModel.find(query)
+    .populate('userId', 'username name lastName')
+    .populate('droneId', 'name model')
+    .skip(skip)
+    .limit(limit)
+    .sort({ createdAt: -1 })
+    .select('-__v')
+
+  const total = await FlightModel.countDocuments(query)
+
+  return {
+    flights,
+    total
+  }
+}
