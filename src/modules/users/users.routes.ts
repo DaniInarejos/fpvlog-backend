@@ -4,7 +4,8 @@ import {
   getUserByIdController,
   updateUserController,
   deleteUserController,
-  getProfileController
+  getProfileController,
+  getDashboardController
  } from './users.controllers'
 import { getDronesByUserController } from '../drones/drones.controllers'
 import { getFlightsByUserController } from '../flights/flights.controllers'
@@ -22,5 +23,8 @@ router.patch('/:id', updateUserController)
 router.delete('/:id', deleteUserController)
 router.get('/:id/drones', getDronesByUserController)
 router.get('/:id/flights', getFlightsByUserController)
+
+// Agregar antes de las rutas que usan :id
+router.get('/dashboard/:username', getDashboardController)
 
 export default router

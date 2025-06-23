@@ -3,7 +3,8 @@ import {
   getAllUsersService, 
   getUserByIdService, 
   updateUserService, 
-  deleteUserService 
+  deleteUserService,
+  getDashboardDataService
 } from './users.services'
 import { getErrorMessage } from '../../utils/error'
 
@@ -81,3 +82,14 @@ export const getProfileController = async (context: Context): Promise<Response> 
     const user = await getUserByIdService(id) 
        return context.json(user)
 }
+
+export const getDashboardController = async (context: Context): Promise<Response> => {
+  try {
+    const username = context.req.param('username')
+    const dashboardData = await getDashboardDataService(username)
+    return context.json(dashboardData)
+  } catch (error) {
+    return context.json({ error: getErrorMessage(error) }, 400)
+  }
+}
+

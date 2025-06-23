@@ -1,6 +1,7 @@
 import { Types } from 'mongoose'
 import UserModel, { IUser } from './users.models'
 import { cacheService } from '../../configs/cache'
+import { dashboardAggregation } from "./aggregations/dashboard"
 
 export async function getAllUsersRepository(): Promise<IUser[]> {
   const cacheKey = 'users:all'
@@ -62,4 +63,13 @@ export async function deleteUserRepository(id: string): Promise<boolean> {
   }
   
   return result !== null
+}
+
+export const getDashboardDataRepository = async (username: string) => {
+  const aggregation = dashboardAggregation(username)
+  const result = await UserModel.aggregate(aggregation).exec()
+
+  if (!result || result.length === 0) return null
+
+  return result[0]
 }

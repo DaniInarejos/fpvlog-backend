@@ -61,7 +61,7 @@ export const getFollowersRepository = async (userId: string, page: number = 1, l
     cacheKey,
     async () => {
       const followers = await FollowerModel.find({ following: userId })
-        .populate('follower', 'username name lastName')
+        .populate('follower', 'username name lastName profilePicture')
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 })
@@ -93,7 +93,7 @@ export const getFollowingRepository = async (userId: string, page: number = 1, l
     cacheKey,
     async () => {
       const following = await FollowerModel.find({ follower: userId })
-        .populate('following', 'username name lastName')
+        .populate('following', 'username name lastName profilePicture')
         .skip(skip)
         .limit(limit)
         .sort({ createdAt: -1 })

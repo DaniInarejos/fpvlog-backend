@@ -3,7 +3,8 @@ import {
   getAllUsersRepository, 
   getUserByIdRepository, 
   updateUserRepository, 
-  deleteUserRepository
+  deleteUserRepository,
+  getDashboardDataRepository
  } from './users.repository'
 
 export async function getAllUsersService(): Promise<IUser[]> {
@@ -20,4 +21,28 @@ export async function updateUserService(id: string, data: Partial<IUser>): Promi
 
 export async function deleteUserService(id: string): Promise<boolean> {
   return await deleteUserRepository(id)
+}
+
+
+export const getDashboardDataService = async (username: string) => {
+  const dashboardData = await getDashboardDataRepository(username)
+  if (!dashboardData) {
+    throw new Error('Usuario no encontrado')
+  }
+
+  const { user, stats, recentFlights, drones } = dashboardData
+
+  return {
+    user: {
+      _id: user._id,
+      username: user.username,
+      name: user.name,
+      lastName: user.lastName,
+      profilePicture: user.profilePicture,
+      points: user.points
+    },
+    stats,
+    recentFlights,
+    drones
+  }
 }
