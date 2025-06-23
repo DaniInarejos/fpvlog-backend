@@ -12,6 +12,7 @@ import { getFlightsByUserController } from '../flights/flights.controllers'
 import { authMiddleware } from '../../middlewares/auth.middleware'
 
 const router = new Hono()
+router.get('/dashboard/:username', getDashboardController)
 
 router.use(authMiddleware)
 
@@ -23,8 +24,5 @@ router.patch('/:id', updateUserController)
 router.delete('/:id', deleteUserController)
 router.get('/:id/drones', getDronesByUserController)
 router.get('/:id/flights', getFlightsByUserController)
-
-// Agregar antes de las rutas que usan :id
-router.get('/dashboard/:username', getDashboardController)
 
 export default router
