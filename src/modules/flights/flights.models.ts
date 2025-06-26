@@ -16,6 +16,7 @@ export interface IFlight extends Document {
     isVisibleToFollowers: boolean
     isPublic: boolean
   }
+  image?: string
 }
 
 const flightSchema = new Schema<IFlight>({
@@ -71,6 +72,10 @@ const flightSchema = new Schema<IFlight>({
   createdAt: { 
     type: Date, 
     default: Date.now 
+  },
+  image: {
+    type: String,
+    default: null
   }
 })
 

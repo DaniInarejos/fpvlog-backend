@@ -5,7 +5,8 @@ import {
   updateFlightService, 
   deleteFlightService,
   createFlightService,
-  getFlightsByUserService
+  getFlightsByUserService,
+  uploadFlightImageService
 } from './flights.services'
 import { getErrorMessage } from '../../utils/error'
 
@@ -103,6 +104,33 @@ export async function deleteFlightController(context: Context): Promise<Response
 
     await deleteFlightService(id)
     return context.json({ message: 'Vuelo eliminado exitosamente' })
+  } catch (error) {
+    return context.json({ error: getErrorMessage(error) }, 400)
+  }
+}
+
+export async function uploadFlightImageController(context: Context): Promise<Response> {
+  try {
+    const id = context.req.param('id')
+    const user = context.get('user')
+    const existingFlight = await getFlightByIdService(id)
+
+    if (!existingFlight) {
+      return context.json({ error: 'Vuelo no encontrado' }, 404)
+    }
+
+    if (existingFlight.userId.toString() !== user._id.toString()) {
+      return context.json({ error: 'No autorizado para actualizar este vuelo' }, 403)
+    }
+
+    const body = await context.req.parseBody()
+    const file = body.image
+
+    if (!file || !(file instanceof File)) {
+      return context.json({ error: 'No se proporcionó ninguna imagen válida' }, 400)
+    }
+    const flight = await uploadFlightImageService(id, file)
+    return context.json(flight)
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 400)
   }

@@ -1,6 +1,6 @@
 import { Schema, model, Document, Types } from 'mongoose'
 
-export interface IDrone extends Document<any> {
+export interface IDrone extends Document {
   name: string
   typeId: Types.ObjectId
   brandId: Types.ObjectId
@@ -16,6 +16,7 @@ export interface IDrone extends Document<any> {
     isVisibleToFollowers: boolean
     isPublic: boolean
   }
+  image?: string
 }
 
 const droneSchema = new Schema<IDrone>({
@@ -76,6 +77,10 @@ const droneSchema = new Schema<IDrone>({
   createdAt: { 
     type: Date, 
     default: Date.now 
+  },
+  image: {
+    type: String,
+    default: null
   }
 })
 

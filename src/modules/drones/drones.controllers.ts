@@ -5,7 +5,8 @@ import {
   getDronesByUserService,
   getDroneByIdService,
   updateDroneService,
-  deleteDroneService
+  deleteDroneService,
+  uploadDroneImageService
 } from './drones.services'
 import { getErrorMessage } from '../../utils/error'
 
@@ -97,6 +98,33 @@ export async function deleteDroneController(context: Context): Promise<Response>
 
     await deleteDroneService(id)
     return context.json({ message: 'Drone eliminado exitosamente' })
+  } catch (error) {
+    return context.json({ error: getErrorMessage(error) }, 400)
+  }
+}
+
+export async function uploadDroneImageController(context: Context): Promise<Response> {
+  try {
+    const id = context.req.param('id')
+    const user = context.get('user')
+    const existingDrone = await getDroneByIdService(id)
+
+    if (!existingDrone) {
+      return context.json({ error: 'Drone no encontrado' }, 404)
+    }
+
+    if (existingDrone.userId.toString() !== user._id.toString()) {
+      return context.json({ error: 'No autorizado para actualizar este drone' }, 403)
+    }
+
+    const body = await context.req.parseBody()
+    const file = body.image
+
+    if (!file || !(file instanceof File)) {
+      return context.json({ error: 'No se proporcionó ninguna imagen válida' }, 400)
+    }
+    const drone = await uploadDroneImageService(id, file)
+    return context.json(drone)
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 400)
   }

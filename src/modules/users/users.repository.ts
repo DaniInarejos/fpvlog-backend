@@ -73,3 +73,25 @@ export const getDashboardDataRepository = async (username: string) => {
 
   return result[0]
 }
+
+
+export const updateProfilePictureRepository = async (userId: string, imageUrl: string): Promise<IUser | null> => {
+  if (!Types.ObjectId.isValid(userId)) {
+    throw new Error('Invalid user ID')
+  }
+  
+  const result = await UserModel.findByIdAndUpdate(
+    userId,
+    { $set: { profilePicture: imageUrl } },
+    { new: true }
+  ).select('-password -__v')
+  
+  if (result) {
+    await cacheService.deleteMany([
+      `user:${userId}`,
+      'users:all'
+    ])
+  }
+  
+  return result
+}

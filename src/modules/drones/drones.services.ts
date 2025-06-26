@@ -8,6 +8,7 @@ import {
   updateDroneRepository,
   deleteDroneRepository
 } from './drones.repository'
+import { uploadImageService } from '../../utils/image.service'
 
 export async function createDroneService(data: Partial<IDrone>): Promise<IDrone> {
   return await createDroneRepository(data)
@@ -31,4 +32,13 @@ export async function updateDroneService(id: string, data: Partial<IDrone>): Pro
 
 export async function deleteDroneService(id: string): Promise<boolean> {
   return await deleteDroneRepository(id)
+}
+
+export async function uploadDroneImageService(id: string, file: File): Promise<IDrone | null> {
+  const imageUrl = await uploadImageService(file, {
+    folder: 'drones',
+    fileName: `drone-${id}`,
+    maxSizeInMB: 5
+  })
+  return await updateDroneRepository(id, { image: imageUrl })
 }

@@ -12,6 +12,7 @@ import {
 import { checkIsFollowingService, getFollowingService } from '../followers/followers.services'
 import { getUserByIdService } from '../users/users.services'
 import { logger } from '../../utils/logger'
+import { uploadImageService } from '../../utils/image.service'
 
 export const createFlightService = async (data: Partial<IFlight>): Promise<IFlight> => {
   return await createFlightRepository(data)
@@ -100,4 +101,13 @@ export const getVisibleFlightsService = async (
     logger.error('Error al obtener vuelos visibles:', error)
     throw error
   }
+}
+
+export async function uploadFlightImageService(id: string, file: File): Promise<IFlight | null> {
+  const imageUrl = await uploadImageService(file, {
+    folder: 'flights',
+    fileName: `flight-${id}`,
+    maxSizeInMB: 5
+  })
+  return await updateFlightRepository(id, { image: imageUrl })
 }

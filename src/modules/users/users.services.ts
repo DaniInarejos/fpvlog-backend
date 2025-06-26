@@ -4,8 +4,10 @@ import {
   getUserByIdRepository, 
   updateUserRepository, 
   deleteUserRepository,
-  getDashboardDataRepository
+  getDashboardDataRepository,
+  updateProfilePictureRepository
  } from './users.repository'
+import { uploadImageService } from '../../utils/image.service'
 
 export async function getAllUsersService(): Promise<IUser[]> {
   return await getAllUsersRepository()
@@ -45,4 +47,20 @@ export const getDashboardDataService = async (username: string) => {
     recentFlights,
     drones
   }
+}
+
+
+export const uploadProfileImageService = async (userId: string, file: { type: string, arrayBuffer: () => Promise<ArrayBuffer>, name: string }): Promise<string> => {
+  const downloadURL = await uploadImageService(file, {
+    folder: 'profile-pictures',
+    fileName: userId,
+    maxSizeInMB: 5
+  })
+
+  const user = await updateProfilePictureRepository(userId, downloadURL)
+  if (!user) {
+    throw new Error('Usuario no encontrado')
+  }
+
+  return downloadURL
 }

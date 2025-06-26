@@ -10,6 +10,7 @@ import {
 import { getDronesByUserController } from '../drones/drones.controllers'
 import { getFlightsByUserController } from '../flights/flights.controllers'
 import { authMiddleware } from '../../middlewares/auth.middleware'
+import { uploadProfileImageController } from './users.controllers'
 
 const router = new Hono()
 router.get('/dashboard/:username', getDashboardController)
@@ -24,5 +25,7 @@ router.patch('/:id', updateUserController)
 router.delete('/:id', deleteUserController)
 router.get('/:id/drones', getDronesByUserController)
 router.get('/:id/flights', getFlightsByUserController)
+
+router.post('/:id/image-profile', uploadProfileImageController)
 
 export default router

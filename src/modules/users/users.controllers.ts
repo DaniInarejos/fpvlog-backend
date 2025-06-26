@@ -4,9 +4,12 @@ import {
   getUserByIdService, 
   updateUserService, 
   deleteUserService,
-  getDashboardDataService
+  getDashboardDataService,
+  uploadProfileImageService
 } from './users.services'
 import { getErrorMessage } from '../../utils/error'
+import { storage } from '../../configs/firebase'
+import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
 
 export async function getAllUsersController(context: Context): Promise<Response> {
   try {
@@ -93,3 +96,28 @@ export const getDashboardController = async (context: Context): Promise<Response
   }
 }
 
+export const uploadProfileImageController = async (context: Context): Promise<Response> => {
+  try {
+    const id = context.req.param('id')
+    const currentUser = context.get('user')
+    
+    if (currentUser._id.toString() !== id) {
+      return context.json({ error: 'No autorizado para actualizar este usuario' }, 403)
+    }
+
+    const body = await context.req.parseBody()
+    const file = body.image
+
+    if (!file || !(file instanceof File)) {
+      return context.json({ error: 'No se proporcionó ninguna imagen válida' }, 400)
+    }
+
+    const downloadURL = await uploadProfileImageService(id, file)
+    
+    return context.json({
+      profilePicture: downloadURL
+    })
+  } catch (error) {
+    return context.json({ error: getErrorMessage(error) }, 400)
+  }
+}

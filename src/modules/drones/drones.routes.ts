@@ -4,7 +4,8 @@ import {
   getAllDronesController,
   getDroneByIdController,
   updateDroneController,
-  deleteDroneController
+  deleteDroneController,
+  uploadDroneImageController
 } from './drones.controllers'
 import { authMiddleware } from '../../middlewares/auth.middleware'
 
@@ -17,5 +18,6 @@ router.get('/:id', getDroneByIdController)
 router.post('/', createDroneController)
 router.patch('/:id', updateDroneController)
 router.delete('/:id', deleteDroneController)
+router.post('/:id/image', uploadDroneImageController)
 
 export default router
