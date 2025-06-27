@@ -11,6 +11,8 @@ import flightRoutes from './modules/flights/flights.routes'
 import droneTypesRoutes from './modules/drone-types/drone-types.routes'
 import droneBrandsRoutes from './modules/drone-brands/drone-brands.routes'
 import followersRoutes from './modules/followers/followers.routes'
+import { swaggerUI } from '@hono/swagger-ui'
+import { openApiDoc } from './openapi'
 
 export const app = new Hono()
 
@@ -28,6 +30,9 @@ app.route('/drones', droneRoutes)
 app.route('/drone-types', droneTypesRoutes)
 app.route('/drone-brands', droneBrandsRoutes)
 app.route('/followers', followersRoutes)
+
+app.get('/api-doc', (c) => c.json(openApiDoc))
+app.get('/docs', swaggerUI({ url: '/api-doc' }))
 
 export default app
 
