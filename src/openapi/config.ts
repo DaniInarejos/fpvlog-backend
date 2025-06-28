@@ -171,6 +171,23 @@ export const components = {
         createdAt: { type: "string", format: "date-time" },
         updatedAt: { type: "string", format: "date-time" }
       }
+    },
+    FeedItem: {
+      type: "object",
+      properties: {
+        type: {
+          type: "string",
+          enum: ["flight", "drone", "user"]
+        },
+        data: {
+          oneOf: [
+            { $ref: "#/components/schemas/Flight" },
+            { $ref: "#/components/schemas/Drone" },
+            { $ref: "#/components/schemas/User" }
+          ]
+        },
+        createdAt: { type: "string", format: "date-time" }
+      }
     }
   }
 }
