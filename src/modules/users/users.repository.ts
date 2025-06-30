@@ -68,7 +68,6 @@ export async function deleteUserRepository(id: string): Promise<boolean> {
 export const getDashboardDataRepository = async (username: string) => {
   const aggregation = dashboardAggregation(username)
   const result = await UserModel.aggregate(aggregation).exec()
-
   if (!result || result.length === 0) return null
 
   return result[0]

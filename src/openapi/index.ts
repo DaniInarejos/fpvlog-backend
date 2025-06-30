@@ -7,6 +7,7 @@ import { followersOpenApiDef } from './modules/followers'
 import { droneTypesOpenApiDef } from './modules/drone-types'
 import { droneBrandsOpenApiDef } from './modules/drone-brands'
 import { feedsOpenApiDef } from './modules/feeds'
+import { likesRoutes } from './modules/likes'
 
 export const openApiDoc = {
   ...openApiConfig,
@@ -18,6 +19,7 @@ export const openApiDoc = {
     ...droneTypesOpenApiDef,
     ...droneBrandsOpenApiDef,
     ...flightsOpenApiDef,
-    ...feedsOpenApiDef
+    ...feedsOpenApiDef,
+    ...likesRoutes
   }
 }

@@ -186,7 +186,18 @@ export const components = {
             { $ref: "#/components/schemas/User" }
           ]
         },
-        createdAt: { type: "string", format: "date-time" }
+        createdAt: { type: "string", format: "date-time" },
+        likes: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              userId: { type: "string" }
+            },
+            required: ["userId"]
+          },
+          description: "Array de usuarios que han dado like al item"
+        }
       }
     }
   }

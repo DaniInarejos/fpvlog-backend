@@ -1,6 +1,7 @@
 import { Types } from 'mongoose'
 import DroneModel, { IDrone } from './drones.models'
 import { cacheService } from '../../configs/cache'
+import { getDronesByUserAggregation } from './drones.aggregations'
 
 export async function createDroneRepository(data: Partial<IDrone>): Promise<IDrone> {
   const drone = new DroneModel(data)
@@ -29,7 +30,7 @@ export async function getDronesByUserRepository(userId: Types.ObjectId): Promise
   
   return await cacheService.loadData<IDrone[]>(
     cacheKey,
-    async () => await DroneModel.find({ userId }).select('-__v')
+    async () => await DroneModel.aggregate(getDronesByUserAggregation(userId))
   )
 }
 

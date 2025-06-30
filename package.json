@@ -21,7 +21,7 @@
     "typescript": "^5.8.3"
   },
   "scripts": {
-    "dev": "bun run src/index.ts"
+    "dev": "bun --watch src/index.ts"
   },
   "name": "fpvlog-backend",
   "module": "src/index.ts",

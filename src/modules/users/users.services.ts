@@ -35,14 +35,7 @@ export const getDashboardDataService = async (username: string) => {
   const { user, stats, recentFlights, drones } = dashboardData
 
   return {
-    user: {
-      _id: user._id,
-      username: user.username,
-      name: user.name,
-      lastName: user.lastName,
-      profilePicture: user.profilePicture,
-      points: user.points
-    },
+    user,
     stats,
     recentFlights,
     drones

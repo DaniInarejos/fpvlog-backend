@@ -1,6 +1,7 @@
 import { Types } from 'mongoose'
 import FlightModel, { IFlight } from './flights.models'
 import { cacheService } from '../../configs/cache'
+import { getFlightsByUserAggregation } from './flights.aggregations'
 
 export async function createFlightRepository(data: Partial<IFlight>): Promise<IFlight> {
   const flight = new FlightModel(data)
@@ -32,7 +33,7 @@ export async function getFlightsByUserRepository(userId: Types.ObjectId): Promis
   
   return await cacheService.loadData<IFlight[]>(
     cacheKey,
-    async () => await FlightModel.find({ userId }).select('-__v')
+    async () => await FlightModel.aggregate(getFlightsByUserAggregation(userId))
   )
 }
 

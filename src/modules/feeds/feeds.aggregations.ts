@@ -1,6 +1,6 @@
-import { Types } from 'mongoose'
+import { PipelineStage } from 'mongoose'
 
-export const getFeedItemsAggregation = (query: any, page: number, limit: number, lastTimestamp?: string) => {
+export const getFeedItemsAggregation = (query: any, page: number, limit: number, lastTimestamp?: string):PipelineStage[]=> {
   const skip = (page - 1) * limit
   
   let timeQuery = {}
@@ -22,6 +22,45 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
                 createdAt: '$createdAt'
               },
               createdAt: '$createdAt'
+            }
+          },
+          {
+            $lookup: {
+              from: 'likes',
+              let: { targetId: '$_id' },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: {
+                      $and: [
+                        { $eq: ['$targetId', '$$targetId'] },
+                        { $eq: ['$targetType', 'user'] }
+                      ]
+                    }
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'users',
+                    localField: 'userId',
+                    foreignField: '_id',
+                    as: 'user'
+                  }
+                },
+                { $unwind: '$user' },
+                {
+                  $project: {
+                    _id: 0,
+                    userId: '$user._id'
+                  }
+                }
+              ],
+              as: 'likes'
+            }
+          },
+          {
+            $addFields: {
+              'data.likes': '$likes'
             }
           }
         ],
@@ -61,6 +100,40 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
                 },
                 { $unwind: { path: '$droneBrand', preserveNullAndEmptyArrays: true } },
                 {
+                  $lookup: {
+                    from: 'likes',
+                    let: { droneId: '$_id' },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              { $eq: ['$targetId', '$$droneId'] },
+                              { $eq: ['$targetType', 'drone'] }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        $lookup: {
+                          from: 'users',
+                          localField: 'userId',
+                          foreignField: '_id',
+                          as: 'user'
+                        }
+                      },
+                      { $unwind: '$user' },
+                      {
+                        $project: {
+                          _id:0,
+                          userId: '$user._id',
+                        }
+                      }
+                    ],
+                    as: 'likes'
+                  }
+                },
+                {
                   $project: {
                     type: { $literal: 'drone' },
                     data: {
@@ -84,7 +157,9 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
                       user: {
                         username: '$$username',
                         profilePicture: '$$profilePicture'
-                      }
+                      },
+                      likes: '$likes',
+                      createdAt: '$createdAt'
                     },
                     createdAt: '$createdAt'
                   }
@@ -123,6 +198,40 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
                 },
                 { $unwind: { path: '$drone', preserveNullAndEmptyArrays: true } },
                 {
+                  $lookup: {
+                    from: 'likes',
+                    let: { flightId: '$_id' },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              { $eq: ['$targetId', '$$flightId'] },
+                              { $eq: ['$targetType', 'FLIGHT'] }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        $lookup: {
+                          from: 'users',
+                          localField: 'userId',
+                          foreignField: '_id',
+                          as: 'user'
+                        }
+                      },
+                      { $unwind: '$user' },
+                      {
+                        $project: {
+                          _id: 0,
+                          userId: '$user._id'
+                        }
+                      }
+                    ],
+                    as: 'likes'
+                  }
+                },
+                {
                   $project: {
                     type: { $literal: 'flight' },
                     data: {
@@ -142,7 +251,9 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
                       drone: {
                         name: '$drone.name',
                         model: '$drone.model'
-                      }
+                      },
+                      likes: '$likes',
+                      createdAt: '$createdAt'
                     },
                     createdAt: '$createdAt'
                   }
