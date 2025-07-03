@@ -8,8 +8,7 @@ import {
   uploadProfileImageService
 } from './users.services'
 import { getErrorMessage } from '../../utils/error'
-import { storage } from '../../configs/firebase'
-import { ref, uploadBytes, getDownloadURL } from 'firebase/storage'
+import { findComponentsByUserGroupedRepository } from '../components/components.repository'
 
 export async function getAllUsersController(context: Context): Promise<Response> {
   try {
@@ -119,5 +118,16 @@ export const uploadProfileImageController = async (context: Context): Promise<Re
     })
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 400)
+  }
+}
+
+export const getUserComponentsController = async (context: Context) => {
+  const userId = context.req.param('id')
+  
+  try {
+    const components = await findComponentsByUserGroupedRepository(userId)
+    return context.json(components)
+  } catch (error) {
+    return context.json({ error: 'Error al obtener los componentes del usuario' }, 500)
   }
 }

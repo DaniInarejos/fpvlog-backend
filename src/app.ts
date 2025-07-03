@@ -15,6 +15,8 @@ import feedsRouter from './modules/feeds/feeds.routes'
 import { swaggerUI } from '@hono/swagger-ui'
 import { openApiDoc } from './openapi'
 import likesRouter from './modules/likes/likes.routes'
+import componentRoutes from './modules/components/components.routes'
+import spotsRouter from './modules/spots/spots.routes'
 
 export const app = new Hono()
 
@@ -33,7 +35,9 @@ app.route('/drone-types', droneTypesRoutes)
 app.route('/drone-brands', droneBrandsRoutes)
 app.route('/followers', followersRoutes)
 app.route('/feeds', feedsRouter)
+app.route('/components', componentRoutes)
 app.route('/likes', likesRouter)
+app.route('/spots', spotsRouter)
 
 app.get('/api-doc', (c) => c.json(openApiDoc))
 app.get('/docs', swaggerUI({ url: '/api-doc' }))

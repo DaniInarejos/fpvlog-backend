@@ -5,7 +5,6 @@ export async function authMiddleware(context: Context, next: Next) {
 
   try {
     const authHeader = context.req.header('Authorization')
-    
     if (!authHeader || !authHeader.startsWith('Bearer ')) {
       return context.json({ error: 'No autorizado' }, 401)
     }

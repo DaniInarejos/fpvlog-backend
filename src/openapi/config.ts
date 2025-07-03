@@ -15,6 +15,25 @@ export const openApiConfig = {
 
 export const components = {
   schemas: {
+    Component: {
+      type: "object",
+      properties: {
+        _id: { type: "string" },
+        name: { type: "string" },
+        brand: { type: "string" },
+        type: {
+          type: "string",
+          enum: ["MOTOR", "FRAME", "FLIGHT_CONTROLLER", "ESC", "VTX", "CAMERA", "ANTENNA", "RECEIVER", "BATTERY", "PROPS", "MOUNT", "OTHER"]
+        },
+        description: { type: "string" },
+        image: { type: "string" },
+        sourceUrl: { type: "string", nullable: true },
+        weightGrams: { type: "number", nullable: true },
+        createdBy: { type: "string" },
+        createdAt: { type: "string", format: "date-time" }
+      },
+      required: ["name", "brand", "type", "description", "image"]
+    },
     Drone: {
       type: "object",
       properties: {
@@ -198,6 +217,39 @@ export const components = {
           },
           description: "Array de usuarios que han dado like al item"
         }
+      }
+    },
+    Spot: {
+      type: "object",
+      properties: {
+        _id: { type: "string" },
+        name: { type: "string" },
+        location: {
+          type: "object",
+          properties: {
+            type: { type: "string", default: "Point" },
+            coordinates: {
+              type: "array",
+              items: { type: "number" },
+              minItems: 2,
+              maxItems: 2
+            },
+            address: { type: "string" },
+            city: { type: "string" },
+            country: { type: "string" },
+            placeId: { type: "string" }
+          }
+        },
+        description: { type: "string" },
+        submittedBy: { type: "string" },
+        visibility: {
+          type: "object",
+          properties: {
+            public: { type: "boolean" },
+            visibleToFollowersOnly: { type: "boolean" }
+          }
+        },
+        createdAt: { type: "string", format: "date-time" }
       }
     }
   }

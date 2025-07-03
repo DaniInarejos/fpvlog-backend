@@ -66,7 +66,7 @@ const flightSchema = new Schema<IFlight>({
     },
     isPublic: {
       type: Boolean,
-      default: false
+      default: true
     }
   },
   createdAt: { 
