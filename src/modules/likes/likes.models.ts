@@ -21,7 +21,7 @@ const likeSchema = new Schema<ILike>({
   },
   targetType: {
     type: String,
-    enum: ['user', 'drone', 'flight'],
+    enum: ['user', 'drone', 'flight','spot'],
     required: [true, 'El tipo de objetivo es requerido']
   },
   createdAt: {

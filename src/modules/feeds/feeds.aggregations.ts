@@ -264,13 +264,89 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
           },
           { $unwind: '$flights' },
           { $replaceRoot: { newRoot: '$flights' } }
+        ],
+        spots: [
+          {
+            $lookup: {
+              from: 'spots',
+              let: { 
+                userId: '$_id',
+                username: '$username',
+                profilePicture: '$profilePicture'
+              },
+              pipeline: [
+                {
+                  $match: {
+                    $expr: { $eq: ['$submittedBy', '$$userId'] },
+                    ...query.spots,
+                    ...timeQuery
+                  }
+                },
+                {
+                  $lookup: {
+                    from: 'likes',
+                    let: { spotId: '$_id' },
+                    pipeline: [
+                      {
+                        $match: {
+                          $expr: {
+                            $and: [
+                              { $eq: ['$targetId', '$$spotId'] },
+                              { $eq: ['$targetType', 'spot'] }
+                            ]
+                          }
+                        }
+                      },
+                      {
+                        $lookup: {
+                          from: 'users',
+                          localField: 'userId',
+                          foreignField: '_id',
+                          as: 'user'
+                        }
+                      },
+                      { $unwind: '$user' },
+                      {
+                        $project: {
+                          _id: 0,
+                          userId: '$user._id'
+                        }
+                      }
+                    ],
+                    as: 'likes'
+                  }
+                },
+                {
+                  $project: {
+                    type: { $literal: 'spot' },
+                    data: {
+                      name: '$name',
+                      location: '$location',
+                      description: '$description',
+                      visibility: '$visibility',
+                      user: {
+                        username: '$$username',
+                        profilePicture: '$$profilePicture'
+                      },
+                      likes: '$likes',
+                      createdAt: '$createdAt'
+                    },
+                    createdAt: '$createdAt'
+                  }
+                }
+              ],
+              as: 'spots'
+            }
+          },
+          { $unwind: '$spots' },
+          { $replaceRoot: { newRoot: '$spots' } }
         ]
       }
     },
     {
       $project: {
         items: {
-          $concatArrays: ['$users', '$drones', '$flights']
+          $concatArrays: ['$users', '$drones', '$flights', '$spots']
         }
       }
     },
@@ -308,4 +384,29 @@ export const getTotalFlightsAggregation = (query: any) => [
   },
   { $project: { count: { $size: '$flights' } } },
   { $group: { _id: null, total: { $sum: '$count' } } }
+]
+
+export const getTotalSpotsAggregation = (query: any): PipelineStage[] => [
+  { $match: query.users },
+  {
+    $lookup: {
+      from: 'spots',
+      let: { userId: '$_id' },
+      pipeline: [
+        {
+          $match: {
+            $expr: { $eq: ['$submittedBy', '$$userId'] },
+            ...query.spots
+          }
+        }
+      ],
+      as: 'spots'
+    }
+  },
+  {
+    $group: {
+      _id: null,
+      total: { $sum: { $size: '$spots' } }
+    }
+  }
 ]

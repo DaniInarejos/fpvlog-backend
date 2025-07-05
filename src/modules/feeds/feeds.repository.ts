@@ -1,19 +1,24 @@
 import { Types } from 'mongoose'
 import UserModel from '../users/users.models'
-import { cacheService } from '../../configs/cache'
-import { getFeedItemsAggregation, getTotalDronesAggregation, getTotalFlightsAggregation } from './feeds.aggregations'
+import { 
+  getFeedItemsAggregation, 
+  getTotalDronesAggregation, 
+  getTotalFlightsAggregation, 
+  getTotalSpotsAggregation
+ } from './feeds.aggregations'
 
 const getFeedItems = async (query: any, page: number, limit: number, lastTimestamp?: string) => {
   const items = await UserModel.aggregate(getFeedItemsAggregation(query, page, limit, lastTimestamp))
-
+  console.log(items)
   // Contar totales
-  const [totalUsers, totalDrones, totalFlights] = await Promise.all([
+  const [totalUsers, totalDrones, totalFlights, totalSpots] = await Promise.all([
     UserModel.countDocuments(query.users),
     UserModel.aggregate(getTotalDronesAggregation(query)).then(result => (result[0]?.total || 0)),
-    UserModel.aggregate(getTotalFlightsAggregation(query)).then(result => (result[0]?.total || 0))
+    UserModel.aggregate(getTotalFlightsAggregation(query)).then(result => (result[0]?.total || 0)),
+    UserModel.aggregate(getTotalSpotsAggregation(query)).then(result => (result[0]?.total || 0))
   ])
 
-  const totalItems = totalUsers + totalDrones + totalFlights
+  const totalItems = totalUsers + totalDrones + totalFlights + totalSpots
   const totalPages = Math.ceil(totalItems / limit)
   const hasNextPage = page < totalPages
   const nextTimestamp = items.length > 0 ? items[items.length - 1].createdAt.toISOString() : null
@@ -37,10 +42,12 @@ export const getGlobalFeedRepository = async (page: number = 1, limit: number = 
  const query = {
         flights: { 'visibility.isPublic': true },
         drones: { 'visibility.isPublic': true },
-        users: { 'privacySettings.profileVisibility': 'public' }
+        users: { 'privacySettings.profileVisibility': 'public' },
+        spots: { 'visibility.public': true },
+
       }
 
-      return await getFeedItems(query, page, limit, lastTimestamp)
+      return  getFeedItems(query, page, limit, lastTimestamp)
 }
 
 export const getFollowingFeedRepository = async (userId: string, page: number = 1, limit: number = 20, lastTimestamp?: string) => {
@@ -55,27 +62,33 @@ export const getFollowingFeedRepository = async (userId: string, page: number = 
         throw new Error('Usuario no encontrado')
       }
 
-      const query = {
-        flights: {
-          $or: [
-            { userId: { $in: user.following }, 'visibility.isVisibleToFollowers': true },
-            { userId: { $in: user.following }, 'visibility.isPublic': true }
-          ]
-        },
-        drones: {
-          $or: [
-            { userId: { $in: user.following }, 'visibility.isVisibleToFollowers': true },
-            { userId: { $in: user.following }, 'visibility.isPublic': true }
-          ]
-        },
-        users: {
-          _id: { $in: user.following },
-          $or: [
-            { 'privacySettings.profileVisibility': 'public' },
-            { 'privacySettings.profileVisibility': 'followers' }
-          ]
-        }
-      }
+     const query = {
+  flights: {
+    $or: [
+      { userId: { $in: user.following }, 'visibility.isVisibleToFollowers': true },
+      { userId: { $in: user.following }, 'visibility.isPublic': true }
+    ]
+  },
+  drones: {
+    $or: [
+      { userId: { $in: user.following }, 'visibility.isVisibleToFollowers': true },
+      { userId: { $in: user.following }, 'visibility.isPublic': true }
+    ]
+  },
+  spots: {
+    $or: [
+      { submittedBy: { $in: user.following }, 'visibility.visibleToFollowersOnly': true },
+      { submittedBy: { $in: user.following }, 'visibility.public': true }
+    ]
+  },
+  users: {
+    _id: { $in: user.following },
+    $or: [
+      { 'privacySettings.profileVisibility': 'public' },
+      { 'privacySettings.profileVisibility': 'followers' }
+    ]
+  }
+}
 
       return await getFeedItems(query, page, limit, lastTimestamp)
 

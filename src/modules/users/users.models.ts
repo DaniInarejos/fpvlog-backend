@@ -48,7 +48,6 @@ const userSchema = new Schema<IUser>({
   },
   lastName: {
     type: String,
-    required: [true, 'El apellido es requerido']
   },
   profilePicture: {
     type: String,

@@ -9,6 +9,7 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
   {
     $project: {
       password: 0,
+      email:0,
       __v: 0
     }
   },
@@ -23,12 +24,8 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
           $match: {
             $expr: {
               $and: [
-                {
-                  $eq: ["$targetId", "$$userId"]
-                },
-                {
-                  $eq: ["$targetType", "user"]
-                }
+                { $eq: ["$targetId", "$$userId"] },
+                { $eq: ["$targetType", "user"] }
               ]
             }
           }
@@ -40,9 +37,7 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
   {
     $lookup: {
       from: "drones",
-      let: {
-        userId: "$_id"
-      },
+      let: { userId: "$_id" },
       pipeline: [
         {
           $match: {
@@ -70,26 +65,14 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
         {
           $lookup: {
             from: "likes",
-            let: {
-              droneId: "$_id"
-            },
+            let: { droneId: "$_id" },
             pipeline: [
               {
                 $match: {
                   $expr: {
                     $and: [
-                      {
-                        $eq: [
-                          "$targetId",
-                          "$$droneId"
-                        ]
-                      },
-                      {
-                        $eq: [
-                          "$targetType",
-                          "drone"
-                        ]
-                      }
+                      { $eq: ["$targetId", "$$droneId"] },
+                      { $eq: ["$targetType", "drone"] }
                     ]
                   }
                 }
@@ -117,9 +100,7 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
   {
     $lookup: {
       from: "flights",
-      let: {
-        userId: "$_id"
-      },
+      let: { userId: "$_id" },
       pipeline: [
         {
           $match: {
@@ -129,9 +110,7 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
           }
         },
         {
-          $sort: {
-            createdAt: -1
-          }
+          $sort: { createdAt: -1 }
         },
         {
           $limit: 5
@@ -147,26 +126,14 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
         {
           $lookup: {
             from: "likes",
-            let: {
-              flightId: "$_id"
-            },
+            let: { flightId: "$_id" },
             pipeline: [
               {
                 $match: {
                   $expr: {
                     $and: [
-                      {
-                        $eq: [
-                          "$targetId",
-                          "$$flightId"
-                        ]
-                      },
-                      {
-                        $eq: [
-                          "$targetType",
-                          "flight"
-                        ]
-                      }
+                      { $eq: ["$targetId", "$$flightId"] },
+                      { $eq: ["$targetType", "flight"] }
                     ]
                   }
                 }
@@ -182,16 +149,66 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
           }
         }
       ],
-      as: "recentFlights"
+      as: "flights"
     }
   },
-  // Get followers count
+  {
+    $lookup: {
+      from: "spots",
+      localField: "_id",
+      foreignField: "submittedBy",
+      as: "spots"
+    }
+  },
+  {
+    $lookup: {
+      from: "likes",
+      let: { spotIds: "$spots._id" },
+      pipeline: [
+        {
+          $match: {
+            $expr: {
+              $and: [
+                { $in: ["$targetId", "$$spotIds"] },
+                { $eq: ["$targetType", "spot"] }
+              ]
+            }
+          }
+        }
+      ],
+      as: "spotLikes"
+    }
+  },
+  {
+    $addFields: {
+      spots: {
+        $map: {
+          input: "$spots",
+          as: "spot",
+          in: {
+            $mergeObjects: [
+              "$$spot",
+              {
+                likes: {
+                  $filter: {
+                    input: "$spotLikes",
+                    as: "like",
+                    cond: {
+                      $eq: ["$$like.targetId", "$$spot._id"]
+                    }
+                  }
+                }
+              }
+            ]
+          }
+        }
+      }
+    }
+  },
   {
     $lookup: {
       from: "followers",
-      let: {
-        userId: "$_id"
-      },
+      let: { userId: "$_id" },
       pipeline: [
         {
           $match: {
@@ -207,13 +224,10 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
       as: "followersCount"
     }
   },
-  // Get following count
   {
     $lookup: {
       from: "followers",
-      let: {
-        userId: "$_id"
-      },
+      let: { userId: "$_id" },
       pipeline: [
         {
           $match: {
@@ -229,39 +243,30 @@ export const dashboardAggregation = (username: string):PipelineStage[] => [
       as: "followingCount"
     }
   },
-  // Format final output
   {
     $project: {
       user: {
-        _id:"$_id",
+        _id: "$_id",
         name: "$name",
         lastName: "$lastName",
         username: "$username",
-        profilePicture:"$profilePicture",
+        profilePicture: "$profilePicture",
         likes: "$likes"
       },
       stats: {
-        dronesCount: {
-          $size: "$drones"
-        },
-        flightsCount: {
-          $size: "$recentFlights"
-        },
+        dronesCount: { $size: "$drones" },
+        flightsCount: { $size: "$flights" },
+        spotsCount: { $size: "$spots" },
         followersCount: {
-          $arrayElemAt: [
-            "$followersCount.total",
-            0
-          ]
+          $ifNull: [{ $arrayElemAt: ["$followersCount.total", 0] }, 0]
         },
         followingCount: {
-          $arrayElemAt: [
-            "$followingCount.total",
-            0
-          ]
+          $ifNull: [{ $arrayElemAt: ["$followingCount.total", 0] }, 0]
         }
       },
-      recentFlights: 1,
-      drones: 1
+      flights: 1,
+      drones: 1,
+      spots: 1
     }
   }
 ]

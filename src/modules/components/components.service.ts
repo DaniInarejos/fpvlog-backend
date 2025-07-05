@@ -13,7 +13,7 @@ import {
 
 export const componentSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido'),
-  brand: z.string(),
+  brand: z.string().optional(),
   type: z.enum(['FRAME', 'MOTOR', 'ESC', 'FC', 'CAMERA', 'VTX', 'ANTENNA', 'RECEIVER', 'BATTERY', 'PROPS', 'MOUNT', 'OTHER']),
   description: z.string().optional(),
   image: z.string().optional(),
@@ -46,11 +46,13 @@ export const getComponentsByUser = async (userId: string) => {
 
 export const createComponent = async (data: unknown) => {
   try {
+    console.log("1")
     const validatedData = componentSchema.parse(data)
+    console.log("2")
     return await createComponentRepository(validatedData)
   } catch (error) {
     if (error instanceof z.ZodError) {
-      throw new HTTPException(400, { message: error.errors[0].message })
+      throw new HTTPException(400, { message: error })
     }
     throw error
   }
