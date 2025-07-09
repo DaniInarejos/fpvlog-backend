@@ -32,14 +32,8 @@ export const getDashboardDataService = async (username: string) => {
     throw new Error('Usuario no encontrado')
   }
 
-  const { user, stats, recentFlights, drones } = dashboardData
 
-  return {
-    user,
-    stats,
-    recentFlights,
-    drones
-  }
+  return dashboardData
 }
 
 
