@@ -12,6 +12,14 @@ export interface IUser extends Document {
   profilePicture?: string 
   followers: Types.ObjectId[]
   following: Types.ObjectId[]
+  socialMedia: {
+    facebook?: string
+    youtube?: string
+    instagram?: string
+    tiktok?: string
+    linkedin?: string
+    x?: string
+  }
   privacySettings: {
     allowFollowersToSeeFlights: boolean
     allowFollowersToSeeDrones: boolean
@@ -81,6 +89,32 @@ const userSchema = new Schema<IUser>({
   createdAt: { 
     type: Date, 
     default: Date.now 
+  },
+  socialMedia: {
+    facebook: {
+      type: String,
+      default: null
+    },
+    youtube: {
+      type: String,
+      default: null
+    },
+    instagram: {
+      type: String,
+      default: null
+    },
+    tiktok: {
+      type: String,
+      default: null
+    },
+    linkedin: {
+      type: String,
+      default: null
+    },
+    x: {
+      type: String,
+      default: null
+    }
   }
 })
 

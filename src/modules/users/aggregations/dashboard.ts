@@ -92,7 +92,8 @@ const projectDashboard = {
       lastName: '$lastName',
       username: '$username',
       profilePicture: '$profilePicture',
-      likes: '$likes'
+      likes: '$likes',
+      socialMedia: '$socialMedia'
     },
     stats: {
       dronesCount: { $size: '$drones' },
