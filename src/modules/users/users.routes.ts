@@ -6,7 +6,8 @@ import {
   deleteUserController,
   getProfileController,
   getDashboardController,
-  getUserComponentsController
+  getUserComponentsController,
+  getUserGroupsController
  } from './users.controllers'
 import { getDronesByUserController } from '../drones/drones.controllers'
 import { getFlightsByUserController } from '../flights/flights.controllers'
@@ -29,6 +30,7 @@ router.get('/:id/drones', getDronesByUserController)
 router.get('/:id/flights', getFlightsByUserController)
 router.get('/:id/components', getUserComponentsController)
 router.get('/:id/spots', getSpotsByUserController)
+router.get('/:id/groups', getUserGroupsController)
 
 router.post('/:id/image-profile', uploadProfileImageController)
 

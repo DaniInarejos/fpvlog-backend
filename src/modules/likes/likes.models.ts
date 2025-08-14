@@ -1,6 +1,6 @@
 import { Schema, model, Document, Types } from 'mongoose'
 
-export type TargetType = 'user' | 'drone' | 'flight'
+export type TargetType = 'user' | 'drone' | 'flight' | 'spot' | 'group_post' | 'group_comment'
 
 export interface ILike extends Document {
   userId: Types.ObjectId
@@ -21,7 +21,7 @@ const likeSchema = new Schema<ILike>({
   },
   targetType: {
     type: String,
-    enum: ['user', 'drone', 'flight','spot'],
+    enum: ['user', 'drone', 'flight', 'spot', 'group_post', 'group_comment'],
     required: [true, 'El tipo de objetivo es requerido']
   },
   createdAt: {

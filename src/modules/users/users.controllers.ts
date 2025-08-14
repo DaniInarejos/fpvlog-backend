@@ -9,6 +9,7 @@ import {
 } from './users.services'
 import { getErrorMessage } from '../../utils/error'
 import { findComponentsByUserGroupedRepository } from '../components/components.repository'
+import { getUserGroupsService } from '../groups/members/group-members.services'
 
 export async function getAllUsersController(context: Context): Promise<Response> {
   try {
@@ -129,5 +130,34 @@ export const getUserComponentsController = async (context: Context) => {
     return context.json(components)
   } catch (error) {
     return context.json({ error: 'Error al obtener los componentes del usuario' }, 500)
+  }
+}
+
+export const getUserGroupsController = async (context: Context): Promise<Response> => {
+  try {
+    const userId = context.req.param('id')
+    const currentUser = context.get('user')
+    
+    // Verificar que el usuario solo pueda ver sus propios grupos
+    if (currentUser._id.toString() !== userId) {
+      return context.json({ error: 'No autorizado para ver los grupos de este usuario' }, 403)
+    }
+    
+    const userGroups = await getUserGroupsService(userId)
+    
+    // Formatear la respuesta con información adicional
+    const response = {
+      groups: userGroups,
+      summary: {
+        totalGroups: userGroups.length,
+        ownedGroups: userGroups.filter(ug => ug.role === 'OWNER').length,
+        adminGroups: userGroups.filter(ug => ug.role === 'ADMIN').length,
+        memberGroups: userGroups.filter(ug => ug.role === 'MEMBER').length
+      }
+    }
+    
+    return context.json(response)
+  } catch (error) {
+    return context.json({ error: getErrorMessage(error) }, 400)
   }
 }

@@ -12,7 +12,7 @@ export async function toggleLikeController(c: Context) {
     const { targetId, targetType } = c.req.param()
     const userId = c.get('user')?._id
 
-    const result = await toggleLikeService(userId, targetId, targetType as TargetType)
+    const result = await toggleLikeService({userId, targetId, targetType: targetType as TargetType})
     return c.json(result)
   } catch (error) {
     return c.json({ error: 'Error al alternar like' }, 500)

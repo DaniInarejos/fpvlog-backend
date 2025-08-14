@@ -8,7 +8,7 @@ import {
   getLikesByUserRepository
 } from './likes.repository'
 
-export async function toggleLikeService(userId: string, targetId: string, targetType: TargetType): Promise<{ liked: boolean, count: number }> {
+export async function toggleLikeService({userId, targetId, targetType}: {userId: string, targetId: string, targetType: TargetType}): Promise<{ liked: boolean, count: number }> {
   const hasLike = await checkUserLikeRepository(userId, targetId, targetType)
 
   if (hasLike) {

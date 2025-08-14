@@ -10,6 +10,7 @@ import { feedsOpenApiDef } from './modules/feeds'
 import { likesRoutes } from './modules/likes'
 import { componentsOpenApiDef } from './modules/components'
 import { spotsOpenApiDef } from './modules/spots'
+import { groupsOpenApiDef } from './modules/groups'
 
 export const openApiDoc = {
   ...openApiConfig,
@@ -24,6 +25,7 @@ export const openApiDoc = {
     ...feedsOpenApiDef,
     ...likesRoutes,
     ...componentsOpenApiDef,
-    ...spotsOpenApiDef
+    ...spotsOpenApiDef,
+    ...groupsOpenApiDef
   }
 }

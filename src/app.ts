@@ -2,6 +2,7 @@ import { Hono } from 'hono'
 import { logger } from 'hono/logger'
 import { cors } from 'hono/cors'
 
+import { filterOptionsLogger } from './middlewares/filter-options-logger.middleware'
 import { emailNormalizeMiddleware } from './middlewares/email-normalize.middleware'
 import userRoutes from './modules/users/users.routes'
 import authRoutes from './modules/auth/auth.routes'
@@ -17,11 +18,19 @@ import { openApiDoc } from './openapi'
 import likesRouter from './modules/likes/likes.routes'
 import componentRoutes from './modules/components/components.routes'
 import spotsRouter from './modules/spots/spots.routes'
+import groupsRouter from './modules/groups/groups.routes'
 
 export const app = new Hono()
 
-// Middlewares básicos
-app.use('*', logger())
+// Middleware personalizado para filtrar OPTIONS
+app.use('*', async (c, next) => {
+  if (c.req.method === 'OPTIONS') {
+    await next()
+    return
+  }
+  return logger()(c, next)
+})
+app.use('*', filterOptionsLogger())
 app.use('*', cors())
 app.use('*', emailNormalizeMiddleware)
 
@@ -38,6 +47,7 @@ app.route('/feeds', feedsRouter)
 app.route('/components', componentRoutes)
 app.route('/likes', likesRouter)
 app.route('/spots', spotsRouter)
+app.route('/groups', groupsRouter)
 
 app.get('/api-doc', (c) => c.json(openApiDoc))
 app.get('/docs', swaggerUI({ url: '/api-doc' }))

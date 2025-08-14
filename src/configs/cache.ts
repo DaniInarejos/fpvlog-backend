@@ -46,6 +46,18 @@ export class CacheService {
     await Promise.all(keys.map(key => this.delete(key)))
   }
 
+  // NUEVO: Método para borrar claves que coincidan con un patrón
+  async deletePattern(pattern: string): Promise<void> {
+    try {
+      const keys = await redis.keys(pattern)
+      if (keys.length > 0) {
+        await redis.del(...keys)
+      }
+    } catch (error) {
+      logger.error('Error deleting cache pattern:', error)
+    }
+  }
+
   async clear(): Promise<void> {
     await redis.flushall()
   }

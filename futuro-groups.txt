@@ -1,0 +1,434 @@
+# NECESIDADES FUTURAS DEL BACKEND - SISTEMA DE GRUPOS
+# Documentación técnica para desarrollo futuro
+# Fecha: 2024
+# Proyecto: FPVLog Frontend
+
+================================================================================
+1. ENDPOINTS ADICIONALES REQUERIDOS
+================================================================================
+
+1.1 GESTIÓN DE MEMBRESÍAS DE USUARIO
+-------------------------------------
+Endpoint: GET /users/me/groups
+Propósito: Obtener todos los grupos donde el usuario actual es miembro
+Justificación: 
+  - Necesario para mostrar "Mis Grupos" en el dashboard del usuario
+  - Permite filtrar grupos por rol del usuario (owner, admin, member)
+  - Mejora la experiencia de navegación del usuario
+Respuesta esperada:
+{
+  "groups": [
+    {
+      "group": { /* objeto grupo completo */ },
+      "membership": {
+        "role": "OWNER|ADMIN|MEMBER",
+        "status": "APPROVED|PENDING|BANNED",
+        "joinedAt": "2024-01-01T00:00:00.000Z"
+      }
+    }
+  ],
+  "summary": {
+    "totalGroups": 5,
+    "ownedGroups": 2,
+    "adminGroups": 1,
+    "memberGroups": 2
+  }
+}
+
+1.2 SISTEMA DE SUBIDA DE ARCHIVOS
+----------------------------------
+Endpoints: 
+  - POST /groups/:id/upload/avatar
+  - POST /groups/:id/upload/banner
+Propósito: Permitir personalización visual de los grupos
+Justificación:
+  - Los grupos necesitan identidad visual propia
+  - Mejora el engagement y reconocimiento
+  - Diferenciación entre grupos similares
+Requerimientos técnicos:
+  - Soporte para multipart/form-data
+  - Validación de tipos de archivo (jpg, png, webp)
+  - Redimensionamiento automático de imágenes
+  - Límites de tamaño (avatar: 1MB, banner: 5MB)
+  - Almacenamiento en CDN o servicio de archivos
+
+1.3 ESTADÍSTICAS Y MÉTRICAS
+----------------------------
+Endpoint: GET /groups/:id/stats
+Propósito: Proporcionar métricas detalladas del grupo
+Justificación:
+  - Los administradores necesitan datos para tomar decisiones
+  - Identificar tendencias de crecimiento o declive
+  - Optimizar estrategias de contenido y engagement
+Métricas incluidas:
+  - Crecimiento de miembros (diario, semanal, mensual)
+  - Actividad de posts (frecuencia, engagement)
+  - Miembros más activos
+  - Horarios de mayor actividad
+  - Retención de miembros
+
+1.4 ACTIVIDAD RECIENTE
+----------------------
+Endpoint: GET /groups/:id/activity
+Propósito: Mostrar timeline de actividades del grupo
+Justificación:
+  - Transparencia en la gestión del grupo
+  - Seguimiento de cambios importantes
+  - Historial para resolución de conflictos
+Actividades rastreadas:
+  - Nuevos miembros unidos
+  - Cambios de roles
+  - Posts creados/eliminados
+  - Acciones de moderación
+  - Cambios de configuración
+
+================================================================================
+2. MEJORAS EN ENDPOINTS EXISTENTES
+================================================================================
+
+2.1 ENRIQUECIMIENTO DE GET /groups/:id
+---------------------------------------
+Propósito: Incluir información de membresía del usuario actual
+Justificación:
+  - Evita llamadas adicionales a la API
+  - Mejora el rendimiento del frontend
+  - Simplifica la lógica de permisos en el cliente
+Cambios necesarios:
+  - Agregar campo "userMembership" en la respuesta
+  - Incluir permisos específicos del usuario
+  - Mostrar estado de solicitudes pendientes
+
+2.2 FILTROS AVANZADOS EN GET /groups/:id/members
+-------------------------------------------------
+Propósito: Permitir filtrado más granular de miembros
+Justificación:
+  - Gestión eficiente de grupos grandes
+  - Búsqueda rápida de miembros específicos
+  - Filtrado por múltiples criterios simultáneos
+Filtros adicionales:
+  - Múltiples roles: ?roles=ADMIN,OWNER
+  - Rango de fechas: ?joinedAfter=2024-01-01&joinedBefore=2024-12-31
+  - Estado de actividad: ?lastActive=7days
+  - Búsqueda por nombre: ?search=username
+
+================================================================================
+3. SISTEMA DE NOTIFICACIONES
+================================================================================
+
+3.1 NOTIFICACIONES DE GRUPO
+----------------------------
+Endpoints:
+  - POST /groups/:id/notifications (crear notificación)
+  - GET /users/me/notifications/groups (obtener notificaciones)
+  - PATCH /notifications/:id/read (marcar como leída)
+Propósito: Mantener a los usuarios informados sobre actividad relevante
+Justificación:
+  - Aumenta el engagement y retención
+  - Facilita la gestión de grupos grandes
+  - Mejora la comunicación entre miembros
+
+Tipos de notificaciones:
+  - Solicitudes de unión pendientes (para admins)
+  - Aprobación/rechazo de solicitudes (para solicitantes)
+  - Nuevos posts en grupos seguidos
+  - Cambios de rol o permisos
+  - Menciones en posts o comentarios
+  - Transferencia de propiedad
+  - Expulsión o baneo del grupo
+
+3.2 CONFIGURACIÓN DE NOTIFICACIONES
+------------------------------------
+Endpoint: PATCH /users/me/notification-preferences
+Propósito: Permitir personalización de notificaciones
+Justificación:
+  - Evitar spam y fatiga de notificaciones
+  - Respetar preferencias del usuario
+  - Cumplir con regulaciones de privacidad
+
+================================================================================
+4. SISTEMA DE MODERACIÓN AVANZADO
+================================================================================
+
+4.1 REPORTES DE CONTENIDO
+--------------------------
+Endpoints:
+  - POST /groups/:id/reports (crear reporte)
+  - GET /groups/:id/reports (ver reportes - solo admins)
+  - PATCH /reports/:id/resolve (resolver reporte)
+Propósito: Facilitar la moderación de contenido inapropiado
+Justificación:
+  - Mantener calidad y seguridad del contenido
+  - Cumplir con políticas de comunidad
+  - Reducir carga de trabajo de moderadores
+
+Tipos de reportes:
+  - Spam o contenido irrelevante
+  - Acoso o comportamiento tóxico
+  - Contenido inapropiado o ofensivo
+  - Violación de reglas del grupo
+  - Información falsa o engañosa
+
+4.2 LOGS DE MODERACIÓN
+----------------------
+Endpoint: GET /groups/:id/moderation-logs
+Propósito: Registrar todas las acciones de moderación
+Justificación:
+  - Transparencia en la moderación
+  - Auditoría de decisiones
+  - Entrenamiento de nuevos moderadores
+  - Resolución de apelaciones
+
+4.3 CONFIGURACIÓN DE GRUPO
+--------------------------
+Endpoint: PATCH /groups/:id/settings
+Propósito: Configuraciones avanzadas de comportamiento del grupo
+Justificación:
+  - Personalización según necesidades específicas
+  - Automatización de tareas de moderación
+  - Mejora de la experiencia del usuario
+
+Configuraciones disponibles:
+  - Auto-aprobación de miembros
+  - Mensaje de bienvenida automático
+  - Reglas del grupo
+  - Restricciones de posting
+  - Filtros de palabras prohibidas
+  - Límites de frecuencia de posts
+
+================================================================================
+5. ANALYTICS Y MÉTRICAS AVANZADAS
+================================================================================
+
+5.1 DASHBOARD DE ANALYTICS
+---------------------------
+Endpoint: GET /groups/:id/analytics
+Propósito: Proporcionar insights detallados para propietarios y admins
+Justificación:
+  - Toma de decisiones basada en datos
+  - Identificación de oportunidades de crecimiento
+  - Optimización de estrategias de contenido
+  - Detección temprana de problemas
+
+Métricas incluidas:
+  - Crecimiento de membresía (tendencias, proyecciones)
+  - Actividad de posts (frecuencia, engagement, horarios óptimos)
+  - Top contributors (miembros más activos)
+  - Métricas de engagement (likes, comentarios, shares)
+  - Retención de miembros (churn rate, lifetime value)
+  - Análisis de contenido (temas populares, hashtags trending)
+
+5.2 EXPORTACIÓN DE DATOS
+------------------------
+Endpoint: GET /groups/:id/export
+Propósito: Permitir exportación de datos del grupo
+Justificación:
+  - Cumplimiento con GDPR y regulaciones de datos
+  - Backup y migración de datos
+  - Análisis externo con herramientas especializadas
+
+Formatos soportados:
+  - CSV para datos tabulares
+  - JSON para datos estructurados
+  - PDF para reportes formateados
+
+================================================================================
+6. INTEGRACIÓN CON POSTS Y COMENTARIOS
+================================================================================
+
+6.1 GESTIÓN DE POSTS DE GRUPO
+------------------------------
+Endpoints ya documentados en groups.txt, pero necesidades adicionales:
+  - Programación de posts (scheduled posts)
+  - Posts fijados (pinned posts)
+  - Categorización de posts
+  - Moderación previa de posts (approval queue)
+
+6.2 SISTEMA DE COMENTARIOS ANIDADOS
+------------------------------------
+Propósito: Permitir conversaciones más organizadas
+Justificación:
+  - Mejora la legibilidad de discusiones largas
+  - Facilita el seguimiento de conversaciones específicas
+  - Reduce el ruido en posts populares
+
+================================================================================
+7. SISTEMA DE INVITACIONES
+================================================================================
+
+7.1 INVITACIONES DIRECTAS
+-------------------------
+Endpoints:
+  - POST /groups/:id/invitations (crear invitación)
+  - GET /users/me/invitations/groups (ver invitaciones recibidas)
+  - PATCH /invitations/:id (aceptar/rechazar)
+Propósito: Facilitar el crecimiento orgánico de grupos
+Justificación:
+  - Crecimiento más rápido y dirigido
+  - Mejor calidad de miembros (invitados por conocidos)
+  - Reducción de spam y miembros no deseados
+
+7.2 ENLACES DE INVITACIÓN
+-------------------------
+Endpoint: POST /groups/:id/invite-links
+Propósito: Crear enlaces únicos para unirse al grupo
+Justificación:
+  - Facilita compartir en redes sociales
+  - Control sobre quién puede unirse
+  - Tracking de fuentes de nuevos miembros
+
+Características:
+  - Enlaces con expiración configurable
+  - Límite de usos por enlace
+  - Tracking de origen de invitaciones
+  - Revocación de enlaces comprometidos
+
+================================================================================
+8. MEJORAS EN SEGURIDAD
+================================================================================
+
+8.1 RATE LIMITING ESPECÍFICO
+----------------------------
+Propósito: Prevenir abuso y spam específico de grupos
+Justificación:
+  - Protección contra ataques automatizados
+  - Mantenimiento de calidad del servicio
+  - Prevención de comportamientos abusivos
+
+Límites específicos:
+  - Creación de grupos: 5 por día por usuario
+  - Solicitudes de unión: 20 por hora por usuario
+  - Posts en grupo: 10 por hora por usuario
+  - Reportes: 5 por día por usuario
+
+8.2 LOGS DE AUDITORÍA
+---------------------
+Endpoint: GET /groups/:id/audit-logs (solo owners)
+Propósito: Registro completo de todas las acciones importantes
+Justificación:
+  - Cumplimiento con regulaciones
+  - Investigación de incidentes de seguridad
+  - Transparencia en la gestión
+  - Resolución de disputas
+
+Eventos registrados:
+  - Cambios de configuración
+  - Acciones de moderación
+  - Transferencias de propiedad
+  - Cambios de permisos
+  - Accesos administrativos
+
+8.3 CONFIGURACIÓN DE PRIVACIDAD
+-------------------------------
+Endpoint: PATCH /groups/:id/privacy-settings
+Propósito: Control granular sobre la privacidad del grupo
+Justificación:
+  - Cumplimiento con regulaciones de privacidad
+  - Flexibilidad según necesidades del grupo
+  - Protección de información sensible
+
+Configuraciones:
+  - Visibilidad del grupo en búsquedas
+  - Acceso a lista de miembros
+  - Indexación por motores de búsqueda
+  - Compartir métricas públicamente
+
+================================================================================
+9. SISTEMA DE BACKUP Y RECUPERACIÓN
+================================================================================
+
+9.1 BACKUP AUTOMÁTICO
+Propósito: Protección contra pérdida de datos
+Justificación:
+  - Continuidad del servicio
+  - Recuperación ante desastres
+  - Cumplimiento con SLAs
+
+9.2 RECUPERACIÓN DE GRUPOS ELIMINADOS
+Endpoint: POST /groups/:id/restore (solo admins del sistema)
+Propósito: Recuperar grupos eliminados accidentalmente
+Justificación:
+  - Errores humanos son inevitables
+  - Valor de los datos de comunidad
+  - Satisfacción del cliente
+
+================================================================================
+10. INTEGRACIONES EXTERNAS
+================================================================================
+
+10.1 WEBHOOKS
+Endpoint: POST /groups/:id/webhooks
+Propósito: Integración con servicios externos
+Justificación:
+  - Automatización de workflows
+  - Integración con herramientas de productividad
+  - Notificaciones en plataformas externas
+
+Eventos soportados:
+  - Nuevo miembro
+  - Nuevo post
+  - Cambio de configuración
+  - Acciones de moderación
+
+10.2 API PARA BOTS
+Propósito: Permitir bots automatizados en grupos
+Justificación:
+  - Automatización de tareas repetitivas
+  - Moderación automática
+  - Servicios de valor agregado
+
+================================================================================
+11. OPTIMIZACIONES DE RENDIMIENTO
+================================================================================
+
+11.1 CACHE INTELIGENTE
+Propósito: Mejorar tiempos de respuesta
+Justificación:
+  - Mejor experiencia de usuario
+  - Reducción de carga en base de datos
+  - Escalabilidad mejorada
+
+Estrategias:
+  - Cache de grupos populares
+  - Cache de listas de miembros
+  - Invalidación inteligente
+  - Cache distribuido para alta disponibilidad
+
+11.2 PAGINACIÓN OPTIMIZADA
+Propósito: Manejo eficiente de datasets grandes
+Justificación:
+  - Grupos con miles de miembros
+  - Listas largas de posts
+  - Rendimiento consistente
+
+Mejoras:
+  - Cursor-based pagination
+  - Lazy loading de datos
+  - Prefetching inteligente
+
+================================================================================
+12. MONITOREO Y OBSERVABILIDAD
+================================================================================
+
+12.1 MÉTRICAS DE SISTEMA
+Propósito: Monitoreo de salud del sistema de grupos
+Justificación:
+  - Detección temprana de problemas
+  - Optimización de recursos
+  - Planificación de capacidad
+
+Métricas clave:
+  - Latencia de endpoints
+  - Tasa de errores
+  - Uso de recursos
+  - Patrones de tráfico
+
+12.2 ALERTAS AUTOMÁTICAS
+Propósito: Notificación proactiva de problemas
+Justificación:
+  - Respuesta rápida a incidentes
+  - Minimización de downtime
+  - Mejor experiencia de usuario
+
+================================================================================
+FIN DEL DOCUMENTO
+================================================================================

@@ -251,6 +251,118 @@ export const components = {
         },
         createdAt: { type: "string", format: "date-time" }
       }
+    },
+ GroupTopic: {
+      type: 'object',
+      properties: {
+        _id: {
+          type: 'string',
+          description: 'ID único del tema'
+        },
+        groupId: {
+          type: 'string',
+          description: 'ID del grupo'
+        },
+        title: {
+          type: 'string',
+          maxLength: 100,
+          description: 'Título del tema'
+        },
+        description: {
+          type: 'string',
+          maxLength: 500,
+          description: 'Descripción del tema'
+        },
+        createdBy: {
+          type: 'object',
+          description: 'Usuario que creó el tema',
+          properties: {
+            _id: { type: 'string' },
+            username: { type: 'string' },
+            name: { type: 'string' },
+            lastName: { type: 'string' },
+            profilePicture: { type: 'string' }
+          }
+        },
+        isPinned: {
+          type: 'boolean',
+          description: 'Si el tema está fijado'
+        },
+        postsCount: {
+          type: 'integer',
+          description: 'Número de posts en el tema'
+        },
+        lastActivity: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de última actividad'
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de creación'
+        },
+        updatedAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de última actualización'
+        }
+      },
+      required: ['_id', 'groupId', 'title', 'createdBy', 'isPinned', 'postsCount', 'lastActivity', 'createdAt']
+    },
+  GroupComment: {
+      type: 'object',
+      properties: {
+        _id: {
+          type: 'string',
+          description: 'ID único del comentario'
+        },
+        postId: {
+          type: 'string',
+          description: 'ID del post'
+        },
+        authorId: {
+          type: 'object',
+          description: 'Autor del comentario',
+          properties: {
+            _id: { type: 'string' },
+            username: { type: 'string' },
+            name: { type: 'string' },
+            lastName: { type: 'string' },
+            profilePicture: { type: 'string' }
+          }
+        },
+        parentId: {
+          type: 'string',
+          description: 'ID del comentario padre (para respuestas)',
+          nullable: true
+        },
+        content: {
+          type: 'string',
+          maxLength: 500,
+          description: 'Contenido del comentario'
+        },
+        likesCount: {
+          type: 'integer',
+          description: 'Número de likes'
+        },
+        repliesCount: {
+          type: 'integer',
+          description: 'Número de respuestas'
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de creación'
+        },
+        updatedAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de última actualización'
+        }
+      },
+      required: ['_id', 'postId', 'authorId', 'content', 'likesCount', 'repliesCount', 'createdAt']
     }
   }
 }
+
