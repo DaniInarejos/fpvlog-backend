@@ -19,6 +19,7 @@ import likesRouter from './modules/likes/likes.routes'
 import componentRoutes from './modules/components/components.routes'
 import spotsRouter from './modules/spots/spots.routes'
 import groupsRouter from './modules/groups/groups.routes'
+import aeronauticsRoutes from './modules/aeronautics/aeronautics.routes'
 
 export const app = new Hono()
 
@@ -48,6 +49,7 @@ app.route('/components', componentRoutes)
 app.route('/likes', likesRouter)
 app.route('/spots', spotsRouter)
 app.route('/groups', groupsRouter)
+app.route('/aeronautics', aeronauticsRoutes)
 
 app.get('/api-doc', (c) => c.json(openApiDoc))
 app.get('/docs', swaggerUI({ url: '/api-doc' }))
