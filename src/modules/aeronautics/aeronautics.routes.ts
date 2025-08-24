@@ -4,7 +4,7 @@ import { getAeronauticsDataController, refreshAeronauticsDataController } from '
 
 const aeronauticsRoutes = new Hono();
 
-//aeronauticsRoutes.use(authMiddleware)
+aeronauticsRoutes.use(authMiddleware)
 // GET /aeronautics - Obtener datos de zonas aeronáuticas
 aeronauticsRoutes.get('/', getAeronauticsDataController);
 

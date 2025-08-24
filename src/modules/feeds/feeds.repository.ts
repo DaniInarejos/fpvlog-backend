@@ -9,7 +9,6 @@ import {
 
 const getFeedItems = async (query: any, page: number, limit: number, lastTimestamp?: string) => {
   const items = await UserModel.aggregate(getFeedItemsAggregation(query, page, limit, lastTimestamp))
-  console.log(JSON.stringify(getFeedItemsAggregation(query, page, limit, lastTimestamp)))
   // Contar totales
   const [totalUsers, totalDrones, totalFlights, totalSpots] = await Promise.all([
     UserModel.countDocuments(query.users),

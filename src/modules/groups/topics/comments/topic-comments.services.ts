@@ -46,7 +46,6 @@ export const createTopicCommentService = async (
     // Obtener información del grupo para verificar el creador
     const group = await getGroupService(topic.groupId._id.toString(), userId)
 
-      console.log(group.createdBy._id.toString() === userId, group.createdBy._id,userId)
     // Verificar si el usuario es el creador del grupo
     const isGroupCreator = group.createdBy._id.toString() === userId
     

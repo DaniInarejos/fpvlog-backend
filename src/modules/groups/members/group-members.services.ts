@@ -56,9 +56,6 @@ export const addMemberService = async (data: z.infer<typeof addMemberSchema>) =>
 // Servicio para obtener un miembro específico
 export const getMemberService = async (groupId: string, userId: string) => {
   try {
-    console.log("groupId", groupId)
-    console.log("userId", userId)
-
 
     if (!groupId || !userId) {
       throw new Error('ID de grupo y usuario son requeridos')

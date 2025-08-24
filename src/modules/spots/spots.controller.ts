@@ -59,9 +59,7 @@ export const createSpotController = async (context: Context) => {
 
 export const updateSpotController = async (context: Context) => {
   try {
-  console.log("HOLA1L")
     const data = await context.req.json()
-  console.log("HOLA2L")
     const spot = await updateSpotService(context.req.param('id'), data)
     return context.json(spot)
   } catch (error) {

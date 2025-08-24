@@ -46,9 +46,7 @@ export const getComponentsByUser = async (userId: string) => {
 
 export const createComponent = async (data: unknown) => {
   try {
-    console.log("1")
     const validatedData = componentSchema.parse(data)
-    console.log("2")
     return await createComponentRepository(validatedData)
   } catch (error) {
     if (error instanceof z.ZodError) {
