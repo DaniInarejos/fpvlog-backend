@@ -5,12 +5,20 @@ interface DatabaseConfig {
   maxRetries: number
   retryInterval: number
   timeout: number
+  // 🆕 Nuevas configuraciones
+  maxPoolSize: number
+  minPoolSize: number
+  maxIdleTimeMS: number
 }
 
 const dbConfig: DatabaseConfig = {
   maxRetries: 2,
   retryInterval: 5000,
   timeout: 10000,
+  // 🔧 Configuración de Pool optimizada
+  maxPoolSize: 20,
+  minPoolSize: 5,
+  maxIdleTimeMS: 30000,
 }
 
 const formatError = (error: any): string => {
@@ -29,8 +37,13 @@ const connectWithRetry = async (retryCount = 0): Promise<void> => {
     }
 
     await mongoose.connect(mongoUri, {
-      serverSelectionTimeoutMS: dbConfig.timeout,
       heartbeatFrequencyMS: 2000,
+      maxPoolSize: dbConfig.maxPoolSize,
+      minPoolSize: dbConfig.minPoolSize,
+      maxIdleTimeMS: dbConfig.maxIdleTimeMS,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+      bufferCommands: false,
     })
 
     logger.info('✅ MongoDB connected successfully')
