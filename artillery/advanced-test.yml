@@ -1,0 +1,410 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - name: "Comprehensive API Test"
+      duration: 600 # 10 minutos
+      arrivalRate: 2
+      rampTo: 5
+  processor: "./test-functions-advanced.cjs"
+  variables:
+    spotIds: []
+    droneIds: []
+    flightIds: []
+    groupIds: []
+    topicIds: []
+    componentIds: []
+    brandIds: []
+    typeIds: []
+    userIds: []
+
+scenarios:
+  - name: "Complete User Journey - All Modules"
+    weight: 60
+    flow:
+      # === AUTHENTICATION & USER SETUP ===
+      - function: "generateTestData"
+      - get:
+          url: "/health"
+      
+      # Register new user
+      - post:
+          url: "/api/v1/auth/register"
+          json:
+            email: "{{ uniqueEmail }}"
+            username: "{{ uniqueUsername }}"
+            password: "testpassword"
+      
+      # Login
+      - post:
+          url: "/api/v1/auth/login"
+          json:
+            email: "{{ uniqueEmail }}"
+            password: "testpassword"
+          capture:
+            json: "$.data.accessToken"
+            as: "accessToken"
+      
+      # Get user profile
+      - get:
+          url: "/api/v1/users/profile"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Get user dashboard
+      - get:
+          url: "/api/v1/users/dashboard"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # === DRONE ECOSYSTEM SETUP ===
+      # Get drone brands
+      - get:
+          url: "/api/v1/drone-brands"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Create drone brand
+      - post:
+          url: "/api/v1/drone-brands"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "Test Brand {{ randomString }}"
+            description: "A test drone brand"
+            website: "https://testbrand.com"
+            country: "Spain"
+            founded: 2020
+          capture:
+            json: "$.id"
+            as: "brandId"
+      
+      # Get drone types
+      - get:
+          url: "/api/v1/drone-types"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Create drone type
+      - post:
+          url: "/api/v1/drone-types"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "Test Racing Drone {{ randomString }}"
+            description: "High-performance racing drone"
+            category: "racing"
+          capture:
+            json: "$.id"
+            as: "typeId"
+      
+      # Get components
+      - get:
+          url: "/api/v1/components"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Create component
+      - post:
+          url: "/api/v1/components"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "Test Motor {{ randomString }}"
+            description: "High-performance motor"
+            type: "motor"
+            brand: "TestBrand"
+            model: "TM2207"
+            specifications:
+              power: "2400KV"
+              weight: "32g"
+          capture:
+            json: "$.id"
+            as: "componentId"
+      
+      # === DRONE MANAGEMENT ===
+      # Get all drones
+      - get:
+          url: "/api/v1/drones"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Create drone
+      - post:
+          url: "/api/v1/drones"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "Test Drone {{ randomString }}"
+            description: "My racing drone"
+            type: "racing"
+            brand: "TestBrand"
+            model: "TD-001"
+            weight: 450
+            batteryCapacity: 1300
+            flightTime: 8
+            maxSpeed: 120
+            components: []
+          capture:
+            json: "$.id"
+            as: "droneId"
+      
+      # Update drone
+      - patch:
+          url: "/api/v1/drones/{{ droneId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            description: "Updated racing drone description"
+            maxSpeed: 130
+      
+      # === SPOTS MANAGEMENT ===
+      # Get all spots
+      - get:
+          url: "/api/v1/spots"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Create spot
+      - post:
+          url: "/api/v1/spots"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "Test Spot {{ randomString }}"
+            description: "Great flying location"
+            location: "-33.8688,151.2093"
+            type: "public"
+            status: "active"
+            legalStatus: "NORESTRICTIONS"
+          capture:
+            json: "$.id"
+            as: "spotId"
+      
+      # Get spot by ID
+      - get:
+          url: "/api/v1/spots/{{ spotId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Update spot
+      - patch:
+          url: "/api/v1/spots/{{ spotId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            description: "Updated spot description"
+            legalStatus: "RESTRICTEDZONE"
+      
+      # === FLIGHTS MANAGEMENT ===
+      # Get all flights
+      - get:
+          url: "/api/v1/flights"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Create flight
+      - post:
+          url: "/api/v1/flights"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            title: "Test Flight {{ randomString }}"
+            description: "Amazing flight session"
+            droneId: "{{ droneId }}"
+            spotId: "{{ spotId }}"
+            duration: 480
+            maxAltitude: 120
+            maxSpeed: 85
+            distance: 2.5
+            batteryUsed: 85
+            weather:
+              temperature: 22
+              humidity: 65
+              windSpeed: 8
+              conditions: "sunny"
+          capture:
+            json: "$.id"
+            as: "flightId"
+      
+      # Update flight
+      - patch:
+          url: "/api/v1/flights/{{ flightId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            description: "Updated flight description"
+            maxAltitude: 150
+      
+      # === SOCIAL FEATURES ===
+      # Get feeds
+      - get:
+          url: "/api/v1/feeds"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Get followed feeds
+      - get:
+          url: "/api/v1/feeds/following"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # === LIKES SYSTEM ===
+      # Like drone
+      - post:
+          url: "/api/v1/likes/toggle"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            targetType: "drone"
+            targetId: "{{ droneId }}"
+      
+      # Like flight
+      - post:
+          url: "/api/v1/likes/toggle"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            targetType: "flight"
+            targetId: "{{ flightId }}"
+      
+      # Get like counts
+      - get:
+          url: "/api/v1/likes/count?targetType=drone&targetId={{ droneId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # === GROUPS MANAGEMENT ===
+      # Get all groups
+      - get:
+          url: "/api/v1/groups"
+      
+      # Search groups
+      - get:
+          url: "/api/v1/groups/search?q=racing"
+      
+      # Create group
+      - post:
+          url: "/api/v1/groups"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "Test Racing Group {{ randomString }}"
+            description: "Group for racing enthusiasts"
+            isPrivate: false
+            tags: ["racing", "fpv", "competition"]
+          capture:
+            json: "$.id"
+            as: "groupId"
+      
+      # Get group by ID
+      - get:
+          url: "/api/v1/groups/{{ groupId }}"
+      
+      # Get group members
+      - get:
+          url: "/api/v1/groups/{{ groupId }}/members"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # === GROUP TOPICS ===
+      # Create topic in group
+      - post:
+          url: "/api/v1/groups/{{ groupId }}/topics"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            title: "Best Racing Setups {{ randomString }}"
+            description: "Let's discuss the best racing drone configurations"
+          capture:
+            json: "$.id"
+            as: "topicId"
+      
+      # Get group topics
+      - get:
+          url: "/api/v1/groups/{{ groupId }}/topics"
+      
+      # Update topic
+      - patch:
+          url: "/api/v1/groups/{{ groupId }}/topics/{{ topicId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            description: "Updated topic description with more details"
+      
+      # === TOPIC COMMENTS ===
+      # Create comment on topic
+      - post:
+          url: "/api/v1/topics/{{ topicId }}/comments"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            content: "Great topic! I use 2207 motors for racing."
+          capture:
+            json: "$.data.id"
+            as: "commentId"
+      
+      # Get topic comments
+      - get:
+          url: "/api/v1/topics/{{ topicId }}/comments"
+      
+      # Like comment
+      - post:
+          url: "/api/v1/topics/comments/{{ commentId }}/like"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # === AERONAUTICS DATA ===
+      # Get aeronautics data
+      - get:
+          url: "/api/v1/aeronautics"
+      
+      # === USER MANAGEMENT ===
+      # Get user's spots
+      - get:
+          url: "/api/v1/users/spots"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Get user's drones
+      - get:
+          url: "/api/v1/users/drones"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+      
+      # Get user's flights
+      - get:
+          url: "/api/v1/users/flights"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+
+  - name: "Read-Only Operations"
+    weight: 30
+    flow:
+      - get:
+          url: "/health"
+      - get:
+          url: "/api/v1/spots"
+      - get:
+          url: "/api/v1/drone-types"
+      - get:
+          url: "/api/v1/drone-brands"
+      - get:
+          url: "/api/v1/components"
+      - get:
+          url: "/api/v1/groups"
+      - get:
+          url: "/api/v1/groups/search?q=fpv"
+      - get:
+          url: "/api/v1/aeronautics"
+
+  - name: "Anonymous User Journey"
+    weight: 10
+    flow:
+      - get:
+          url: "/health"
+      - get:
+          url: "/api/v1/groups"
+      - get:
+          url: "/api/v1/groups/search?q=racing"
+      - get:
+          url: "/api/v1/aeronautics"

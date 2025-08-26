@@ -8,6 +8,7 @@ export async function registerUser(context: Context) {
     const result = await authSertivce.register(data)
     return context.json(result, 201)
   } catch (error) {
+    console.log(error)
     return context.json({ error: getErrorMessage(error) }, 400)
   }
 }
