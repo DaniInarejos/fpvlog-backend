@@ -115,7 +115,7 @@ export const feedsOpenApiDef = {
                   items: {
                     type: "array",
                     items: {
-                      $ref: "#/components/schemas/FeedsItem"
+                      $ref: "#/components/schemas/FeedItem"
                     }
                   },
                   pagination: {

@@ -23,14 +23,7 @@ import aeronauticsRoutes from './modules/aeronautics/aeronautics.routes'
 
 export const app = new Hono()
 
-// Middleware personalizado para filtrar OPTIONS
-app.use('*', async (c, next) => {
-  if (c.req.method === 'OPTIONS') {
-    await next()
-    return
-  }
-  return logger()(c, next)
-})
+// Middleware personalizado para filtrar OPTIONS y /health
 app.use('*', filterOptionsLogger())
 app.use('*', cors())
 app.use('*', emailNormalizeMiddleware)

@@ -1,0 +1,1081 @@
+{
+  "info": {
+    "name": "SkySphere API v1.0.0",
+    "description": "Complete API collection for SkySphere Backend - Generated from OpenAPI documentation",
+    "version": "1.0.0",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{authToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "authToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "userId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "targetUserId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "droneId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "flightId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "componentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "spotId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "groupId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "droneTypeId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "droneBrandId",
+      "value": "",
+      "type": "string"
+    }
+  ],
+  "item": [
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/health",
+              "host": ["{{baseUrl}}"],
+              "path": ["health"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication",
+      "item": [
+        {
+          "name": "Register",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('authToken', response.token);",
+                  "    }",
+                  "    if (response.User && response.User._id) {",
+                  "        pm.collectionVariables.set('userId', response.User._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\",\n  \"name\": \"Test\",\n  \"lastName\": \"User\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          }
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const response = pm.response.json();",
+                  "    if (response.token) {",
+                  "        pm.collectionVariables.set('authToken', response.token);",
+                  "    }",
+                  "    if (response.User && response.User._id) {",
+                  "        pm.collectionVariables.set('userId', response.User._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"password123\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Users",
+      "item": [
+        {
+          "name": "Get Profile",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Update Profile",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Name\",\n  \"lastName\": \"Updated LastName\",\n  \"socialMedia\": {\n    \"youtube\": \"https://youtube.com/@user\",\n    \"instagram\": \"@user\"\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/users/profile",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "profile"]
+            }
+          }
+        },
+        {
+          "name": "Get User by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{targetUserId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{targetUserId}}"]
+            }
+          }
+        },
+        {
+          "name": "Get User Drones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{targetUserId}}/drones",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{targetUserId}}", "drones"]
+            }
+          }
+        },
+        {
+          "name": "Get User Flights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{targetUserId}}/flights",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{targetUserId}}", "flights"]
+            }
+          }
+        },
+        {
+          "name": "Get User Components",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{targetUserId}}/components",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{targetUserId}}", "components"]
+            }
+          }
+        },
+        {
+          "name": "Get User Spots",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/users/{{targetUserId}}/spots",
+              "host": ["{{baseUrl}}"],
+              "path": ["users", "{{targetUserId}}", "spots"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Followers",
+      "item": [
+        {
+          "name": "Follow User",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "follow"]
+            }
+          }
+        },
+        {
+          "name": "Unfollow User",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/follow",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "follow"]
+            }
+          }
+        },
+        {
+          "name": "Get User Followers",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/followers",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "followers"]
+            }
+          }
+        },
+        {
+          "name": "Get User Following",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/following",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "following"]
+            }
+          }
+        },
+        {
+          "name": "Check if Following",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/followers/{{targetUserId}}/is-following",
+              "host": ["{{baseUrl}}"],
+              "path": ["followers", "{{targetUserId}}", "is-following"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drones",
+      "item": [
+        {
+          "name": "Get All Drones",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drones",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones"]
+            }
+          }
+        },
+        {
+          "name": "Create Drone",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set('droneId', response._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"My Racing Drone\",\n  \"typeId\": \"{{droneTypeId}}\",\n  \"brandId\": \"{{droneBrandId}}\",\n  \"model\": \"Custom Build\",\n  \"weight\": 250,\n  \"frameSize\": 5,\n  \"originType\": \"CUSTOM\",\n  \"visibility\": {\n    \"isVisibleToFollowers\": true,\n    \"isPublic\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drones",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones"]
+            }
+          }
+        },
+        {
+          "name": "Get Drone by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drones/{{droneId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones", "{{droneId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Drone",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Drone Name\",\n  \"weight\": 280,\n  \"notes\": \"Updated with new components\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drones/{{droneId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones", "{{droneId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Drone",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drones/{{droneId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drones", "{{droneId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drone Types",
+      "item": [
+        {
+          "name": "Get All Drone Types",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types"]
+            }
+          }
+        },
+        {
+          "name": "Create Drone Type",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set('droneTypeId', response._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Racing Drone\",\n  \"description\": \"High-speed racing drone\",\n  \"category\": \"racing\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drone-types",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types"]
+            }
+          }
+        },
+        {
+          "name": "Get Drone Type by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-types/{{droneTypeId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-types", "{{droneTypeId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Drone Brands",
+      "item": [
+        {
+          "name": "Get All Drone Brands",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands"]
+            }
+          }
+        },
+        {
+          "name": "Create Drone Brand",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set('droneBrandId', response._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"DJI\",\n  \"description\": \"Leading drone manufacturer\",\n  \"website\": \"https://www.dji.com\",\n  \"country\": \"China\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands"]
+            }
+          }
+        },
+        {
+          "name": "Get Drone Brand by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/drone-brands/{{droneBrandId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["drone-brands", "{{droneBrandId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Flights",
+      "item": [
+        {
+          "name": "Get All Flights",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights"]
+            }
+          }
+        },
+        {
+          "name": "Create Flight",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set('flightId', response._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Morning Flight Session\",\n  \"description\": \"Great weather for flying\",\n  \"date\": \"2024-01-15T10:00:00Z\",\n  \"location\": \"Central Park\",\n  \"duration\": 15,\n  \"batteryUsed\": 85,\n  \"weather\": \"Sunny, light wind\",\n  \"droneId\": \"{{droneId}}\",\n  \"spotId\": \"{{spotId}}\",\n  \"visibility\": {\n    \"isVisibleToFollowers\": true,\n    \"isPublic\": true\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flights",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights"]
+            }
+          }
+        },
+        {
+          "name": "Get Flight by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights/{{flightId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights", "{{flightId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Flight",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Updated Flight Title\",\n  \"notes\": \"Added some notes about the flight\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/flights/{{flightId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights", "{{flightId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Flight",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/flights/{{flightId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["flights", "{{flightId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Components",
+      "item": [
+        {
+          "name": "Get All Components",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/components",
+              "host": ["{{baseUrl}}"],
+              "path": ["components"]
+            }
+          }
+        },
+        {
+          "name": "Create Component",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set('componentId', response._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Racing Motor 2207\",\n  \"brand\": \"T-Motor\",\n  \"type\": \"MOTOR\",\n  \"description\": \"High performance racing motor\",\n  \"image\": \"https://example.com/motor.jpg\",\n  \"weightGrams\": 32\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/components",
+              "host": ["{{baseUrl}}"],
+              "path": ["components"]
+            }
+          }
+        },
+        {
+          "name": "Get Component by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/components/{{componentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["components", "{{componentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Component",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Component Name\",\n  \"description\": \"Updated description\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/components/{{componentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["components", "{{componentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Component",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/components/{{componentId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["components", "{{componentId}}"]
+            }
+          }
+        },
+        {
+          "name": "Search Components",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/components/search?q=motor",
+              "host": ["{{baseUrl}}"],
+              "path": ["components", "search"],
+              "query": [
+                {
+                  "key": "q",
+                  "value": "motor"
+                }
+              ]
+            }
+          }
+        },
+        {
+          "name": "Get Components by Type",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/components/type/MOTOR",
+              "host": ["{{baseUrl}}"],
+              "path": ["components", "type", "MOTOR"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Spots",
+      "item": [
+        {
+          "name": "Get All Spots",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/spots",
+              "host": ["{{baseUrl}}"],
+              "path": ["spots"]
+            }
+          }
+        },
+        {
+          "name": "Create Spot",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set('spotId', response._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Central Park Flying Area\",\n  \"location\": {\n    \"type\": \"Point\",\n    \"coordinates\": [-73.9654, 40.7829],\n    \"address\": \"Central Park\",\n    \"city\": \"New York\",\n    \"country\": \"USA\"\n  },\n  \"description\": \"Great spot for drone flying with open space\",\n  \"legalStatus\": \"NORESTRICTIONS\",\n  \"visibility\": {\n    \"public\": true,\n    \"visibleToFollowersOnly\": false\n  }\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/spots",
+              "host": ["{{baseUrl}}"],
+              "path": ["spots"]
+            }
+          }
+        },
+        {
+          "name": "Get Spot by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/spots/{{spotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["spots", "{{spotId}}"]
+            }
+          }
+        },
+        {
+          "name": "Update Spot",
+          "request": {
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"Updated Spot Name\",\n  \"description\": \"Updated description\",\n  \"legalStatus\": \"RESTRICTEDZONE\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/spots/{{spotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["spots", "{{spotId}}"]
+            }
+          }
+        },
+        {
+          "name": "Delete Spot",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/spots/{{spotId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["spots", "{{spotId}}"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Feeds",
+      "item": [
+        {
+          "name": "Get Feed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/feeds",
+              "host": ["{{baseUrl}}"],
+              "path": ["feeds"]
+            }
+          }
+        },
+        {
+          "name": "Get Personal Feed",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/feeds/personal",
+              "host": ["{{baseUrl}}"],
+              "path": ["feeds", "personal"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Likes",
+      "item": [
+        {
+          "name": "Like Item",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetId\": \"{{flightId}}\",\n  \"targetType\": \"flight\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/likes",
+              "host": ["{{baseUrl}}"],
+              "path": ["likes"]
+            }
+          }
+        },
+        {
+          "name": "Unlike Item",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"targetId\": \"{{flightId}}\",\n  \"targetType\": \"flight\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/likes",
+              "host": ["{{baseUrl}}"],
+              "path": ["likes"]
+            }
+          }
+        },
+        {
+          "name": "Get Item Likes",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/likes/{{flightId}}/flight",
+              "host": ["{{baseUrl}}"],
+              "path": ["likes", "{{flightId}}", "flight"]
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "Groups",
+      "item": [
+        {
+          "name": "Get All Groups",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups"]
+            }
+          }
+        },
+        {
+          "name": "Create Group",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "    const response = pm.response.json();",
+                  "    if (response._id) {",
+                  "        pm.collectionVariables.set('groupId', response._id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"name\": \"FPV Racing Community\",\n  \"description\": \"A group for FPV racing enthusiasts\",\n  \"isPrivate\": false,\n  \"tags\": [\"racing\", \"fpv\", \"community\"]\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/groups",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups"]
+            }
+          }
+        },
+        {
+          "name": "Get Group by ID",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/groups/{{groupId}}",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "{{groupId}}"]
+            }
+          }
+        },
+        {
+          "name": "Join Group",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/groups/{{groupId}}/join",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "{{groupId}}", "join"]
+            }
+          }
+        },
+        {
+          "name": "Leave Group",
+          "request": {
+            "method": "DELETE",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/groups/{{groupId}}/leave",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "{{groupId}}", "leave"]
+            }
+          }
+        },
+        {
+          "name": "Get Group Members",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{baseUrl}}/groups/{{groupId}}/members",
+              "host": ["{{baseUrl}}"],
+              "path": ["groups", "{{groupId}}", "members"]
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

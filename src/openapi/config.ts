@@ -23,7 +23,7 @@ export const components = {
         brand: { type: "string" },
         type: {
           type: "string",
-          enum: ["MOTOR", "FRAME", "FLIGHT_CONTROLLER", "ESC", "VTX", "CAMERA", "ANTENNA", "RECEIVER", "BATTERY", "PROPS", "MOUNT", "OTHER"]
+          enum: ["MOTOR", "FRAME", "FC", "ESC", "VTX", "CAMERA", "ANTENNA", "RECEIVER", "BATTERY", "PROPS", "MOUNT", "OTHER"]
         },
         description: { type: "string" },
         image: { type: "string" },
@@ -32,7 +32,7 @@ export const components = {
         createdBy: { type: "string" },
         createdAt: { type: "string", format: "date-time" }
       },
-      required: ["name", "brand", "type", "description", "image"]
+      required: ["name", "brand", "type", "description", "image", "createdBy"]
     },
     Drone: {
       type: "object",
@@ -48,7 +48,10 @@ export const components = {
         notes: { type: "string", nullable: true },
         description: { type: "string", nullable: true },
         userId: { type: "string" },
-        createdAt: { type: "string", format: "date-time" },
+        originType: {
+          type: "string",
+          enum: ["CUSTOM", "BRANDED"]
+        },
         visibility: {
           type: "object",
           properties: {
@@ -56,8 +59,37 @@ export const components = {
             isPublic: { type: "boolean" }
           }
         },
-        image: { type: "string", nullable: true }
-      }
+        image: { type: "string", nullable: true },
+        components: {
+          type: "object",
+          properties: {
+            frameId: { type: "string", nullable: true },
+            motors: {
+              type: "array",
+              items: { type: "string" },
+              nullable: true
+            },
+            flightControllerId: { type: "string", nullable: true },
+            escId: { type: "string", nullable: true },
+            vtxId: { type: "string", nullable: true },
+            cameraId: { type: "string", nullable: true },
+            antennaId: { type: "string", nullable: true },
+            receiverId: { type: "string", nullable: true },
+            batteryId: { type: "string", nullable: true },
+            propsId: { type: "string", nullable: true },
+            mountId: { type: "string", nullable: true },
+            others: {
+              type: "array",
+              items: { type: "string" },
+              nullable: true
+            }
+          },
+          nullable: true
+        },
+        betaflightId: { type: "string", nullable: true },
+        createdAt: { type: "string", format: "date-time" }
+      },
+      required: ["name", "userId", "originType"]
     },
     AuthResponse: {
       type: "object",
@@ -91,6 +123,18 @@ export const components = {
                 }
               }
             },
+            socialMedia: {
+              type: "object",
+              properties: {
+                facebook: { type: "string", nullable: true },
+                youtube: { type: "string", nullable: true },
+                instagram: { type: "string", nullable: true },
+                tiktok: { type: "string", nullable: true },
+                linkedin: { type: "string", nullable: true },
+                x: { type: "string", nullable: true }
+              },
+              nullable: true
+            },
             createdAt: { type: "string", format: "date-time" }
           }
         },
@@ -111,6 +155,8 @@ export const components = {
         notes: { type: "string", nullable: true },
         userId: { type: "string" },
         droneId: { type: "string" },
+        spotId: { type: "string", nullable: true },
+        urlVideo: { type: "string", nullable: true },
         createdAt: { type: "string", format: "date-time" },
         visibility: {
           type: "object",
@@ -161,6 +207,18 @@ export const components = {
             }
           }
         },
+        socialMedia: {
+          type: "object",
+          properties: {
+            facebook: { type: "string", nullable: true },
+            youtube: { type: "string", nullable: true },
+            instagram: { type: "string", nullable: true },
+            tiktok: { type: "string", nullable: true },
+            linkedin: { type: "string", nullable: true },
+            x: { type: "string", nullable: true }
+          },
+          nullable: true
+        },
         createdAt: { type: "string", format: "date-time" }
       }
     },
@@ -196,13 +254,14 @@ export const components = {
       properties: {
         type: {
           type: "string",
-          enum: ["flight", "drone", "user"]
+          enum: ["flight", "drone", "user", "spot"]
         },
         data: {
           oneOf: [
             { $ref: "#/components/schemas/Flight" },
             { $ref: "#/components/schemas/Drone" },
-            { $ref: "#/components/schemas/User" }
+            { $ref: "#/components/schemas/User" },
+            { $ref: "#/components/schemas/Spot" }
           ]
         },
         createdAt: { type: "string", format: "date-time" },
@@ -248,6 +307,11 @@ export const components = {
             public: { type: "boolean" },
             visibleToFollowersOnly: { type: "boolean" }
           }
+        },
+        legalStatus: {
+          type: "string",
+          enum: ["NORESTRICTIONS", "RESTRICTEDZONE", "PROHIBITEDZONE", "WITHOUT_ANALIZED"],
+          default: "WITHOUT_ANALIZED"
         },
         createdAt: { type: "string", format: "date-time" }
       }
@@ -362,6 +426,96 @@ export const components = {
         }
       },
       required: ['_id', 'postId', 'authorId', 'content', 'likesCount', 'repliesCount', 'createdAt']
+    },
+    Group: {
+      type: 'object',
+      properties: {
+        _id: {
+          type: 'string',
+          description: 'ID único del grupo'
+        },
+        name: {
+          type: 'string',
+          maxLength: 500,
+          description: 'Nombre del grupo'
+        },
+        description: {
+          type: 'string',
+          maxLength: 5000,
+          description: 'Descripción del grupo',
+          nullable: true
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de creación'
+        },
+        createdBy: {
+          type: 'string',
+          description: 'ID del usuario que creó el grupo'
+        },
+        isPrivate: {
+          type: 'boolean',
+          default: false,
+          description: 'Si el grupo es privado'
+        },
+        avatarUrl: {
+          type: 'string',
+          nullable: true,
+          description: 'URL del avatar del grupo'
+        },
+        bannerUrl: {
+          type: 'string',
+          nullable: true,
+          description: 'URL del banner del grupo'
+        },
+        membersCount: {
+          type: 'number',
+          default: 1,
+          description: 'Número de miembros'
+        },
+        postsCount: {
+          type: 'number',
+          default: 0,
+          description: 'Número de posts'
+        },
+        tags: {
+          type: 'array',
+          items: { type: 'string' },
+          description: 'Tags del grupo',
+          nullable: true
+        }
+      },
+      required: ['_id', 'name', 'createdAt', 'createdBy', 'isPrivate', 'membersCount', 'postsCount']
+    },
+    GroupMember: {
+      type: 'object',
+      properties: {
+        _id: {
+          type: 'string',
+          description: 'ID único de la membresía'
+        },
+        groupId: {
+          type: 'string',
+          description: 'ID del grupo'
+        },
+        userId: {
+          type: 'string',
+          description: 'ID del usuario'
+        },
+        role: {
+          type: 'string',
+          enum: ['OWNER', 'ADMIN', 'MOD', 'MEMBER', 'PENDING', 'BANNED'],
+          default: 'MEMBER',
+          description: 'Rol del usuario en el grupo'
+        },
+        joinedAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de unión al grupo'
+        }
+      },
+      required: ['_id', 'groupId', 'userId', 'role', 'joinedAt']
     }
   }
 }

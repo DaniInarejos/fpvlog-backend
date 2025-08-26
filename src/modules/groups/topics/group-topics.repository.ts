@@ -4,7 +4,7 @@ import { cacheService } from '../../../configs/cache'
 
 export const createTopicRepository = async (topicData: Partial<IGroupTopic>): Promise<IGroupTopic> => {
   const topic = await GroupTopic.create(topicData)
-  await cacheService.deleteMany([`group:${topicData.groupId}:topics:*`])
+  await cacheService.deletePattern(`group:${topicData.groupId}:topics:*`)
   return topic
 }
 
@@ -57,6 +57,12 @@ export const updateTopicRepository = async (id: string, updateData: Partial<IGro
     throw new Error('ID de tema inválido')
   }
   
+  // Primero obtenemos el topic original para tener el groupId
+  const originalTopic = await GroupTopic.findById(id)
+  if (!originalTopic) {
+    return null
+  }
+  
   const topic = await GroupTopic.findByIdAndUpdate(
     id,
     { ...updateData, updatedAt: new Date() },
@@ -64,10 +70,11 @@ export const updateTopicRepository = async (id: string, updateData: Partial<IGro
   ).populate('createdBy', 'username name lastName profilePicture')
   
   if (topic) {
-    await cacheService.deleteMany([
-      `topic:${id}`,
-      `group:${topic.groupId}:topics:*`
-    ])
+    // Eliminar cache específico del topic
+    await cacheService.delete(`topic:${id}`)
+    
+    // Eliminar todas las cache keys que coincidan con el patrón del grupo
+    await cacheService.deletePattern(`group:${originalTopic.groupId}:topics:*`)
   }
   
   return topic
@@ -84,10 +91,10 @@ export const deleteTopicRepository = async (id: string): Promise<boolean> => {
   }
   
   await GroupTopic.findByIdAndDelete(id)
-  await cacheService.deleteMany([
-    `topic:${id}`,
-    `group:${topic.groupId}:topics:*`
-  ])
+  
+  await cacheService.delete(`topic:${id}`)
+  
+  await cacheService.deletePattern(`group:${topic.groupId}:topics:*`)
   
   return true
 }

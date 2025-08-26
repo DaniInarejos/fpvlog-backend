@@ -53,6 +53,8 @@ export const flightsOpenApiDef = {
                 weather: { type: "string" },
                 notes: { type: "string" },
                 droneId: { type: "string" },
+                spotId: { type: "string" },
+                urlVideo: { type: "string" },
                 visibility: {
                   type: "object",
                   properties: {
@@ -170,6 +172,8 @@ export const flightsOpenApiDef = {
                 batteryUsed: { type: "number", minimum: 0 },
                 weather: { type: "string" },
                 notes: { type: "string" },
+  spotId: { type: "string" },
+  urlVideo: { type: "string" }, 
                 visibility: {
                   type: "object",
                   properties: {

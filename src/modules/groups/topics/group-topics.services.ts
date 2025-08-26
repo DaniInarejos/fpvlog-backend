@@ -123,7 +123,7 @@ export const deleteTopicService = async (topicId: string, userId: string): Promi
   }
   
   // Verificar permisos
-  const membership = await memberRepository.findMemberRepository(topic.groupId.toString(), userId)
+  const membership = await memberRepository.findMemberRepository(topic.groupId._id.toString(), userId)
   if (!membership) {
     throw new Error('No eres miembro de este grupo')
   }

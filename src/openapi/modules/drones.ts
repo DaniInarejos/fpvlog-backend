@@ -182,6 +182,26 @@ export const dronesOpenApiDef = {
                 frameSize: { type: "number" },
                 notes: { type: "string" },
                 description: { type: "string" },
+                originType: { type: "string", enum: ["CUSTOM", "BRANDED"] },
+                components: {
+                  type: "object",
+                  properties: {
+                    frameId: { type: "string", nullable: true },
+                    motors: { type: "array", items: { type: "string" }, nullable: true },
+                    flightControllerId: { type: "string", nullable: true },
+                    escId: { type: "string", nullable: true },
+                    vtxId: { type: "string", nullable: true },
+                    cameraId: { type: "string", nullable: true },
+                    antennaId: { type: "string", nullable: true },
+                    receiverId: { type: "string", nullable: true },
+                    batteryId: { type: "string", nullable: true },
+                    propsId: { type: "string", nullable: true },
+                    mountId: { type: "string", nullable: true },
+                    others: { type: "array", items: { type: "string" }, nullable: true }
+                  },
+                  nullable: true
+                },
+                betaflightId: { type: "string", nullable: true },
                 visibility: {
                   type: "object",
                   properties: {
