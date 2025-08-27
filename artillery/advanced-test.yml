@@ -1,5 +1,5 @@
 config:
-  target: "http://localhost:3000"
+  target: "https://fpvlog-backend.onrender.com"
   phases:
     - name: "Comprehensive API Test"
       duration: 600 # 10 minutos
@@ -28,7 +28,7 @@ scenarios:
       
       # Register new user
       - post:
-          url: "/api/v1/auth/register"
+          url: "/auth/register"
           json:
             email: "{{ uniqueEmail }}"
             username: "{{ uniqueUsername }}"
@@ -36,7 +36,7 @@ scenarios:
       
       # Login
       - post:
-          url: "/api/v1/auth/login"
+          url: "/auth/login"
           json:
             email: "{{ uniqueEmail }}"
             password: "testpassword"
@@ -46,26 +46,26 @@ scenarios:
       
       # Get user profile
       - get:
-          url: "/api/v1/users/profile"
+          url: "/users/profile"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Get user dashboard
       - get:
-          url: "/api/v1/users/dashboard"
+          url: "/users/dashboard"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # === DRONE ECOSYSTEM SETUP ===
       # Get drone brands
       - get:
-          url: "/api/v1/drone-brands"
+          url: "/drone-brands"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Create drone brand
       - post:
-          url: "/api/v1/drone-brands"
+          url: "/drone-brands"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -80,13 +80,13 @@ scenarios:
       
       # Get drone types
       - get:
-          url: "/api/v1/drone-types"
+          url: "/drone-types"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Create drone type
       - post:
-          url: "/api/v1/drone-types"
+          url: "/drone-types"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -99,13 +99,13 @@ scenarios:
       
       # Get components
       - get:
-          url: "/api/v1/components"
+          url: "/components"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Create component
       - post:
-          url: "/api/v1/components"
+          url: "/components"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -124,13 +124,13 @@ scenarios:
       # === DRONE MANAGEMENT ===
       # Get all drones
       - get:
-          url: "/api/v1/drones"
+          url: "/drones"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Create drone
       - post:
-          url: "/api/v1/drones"
+          url: "/drones"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -150,7 +150,7 @@ scenarios:
       
       # Update drone
       - patch:
-          url: "/api/v1/drones/{{ droneId }}"
+          url: "/drones/{{ droneId }}"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -160,13 +160,13 @@ scenarios:
       # === SPOTS MANAGEMENT ===
       # Get all spots
       - get:
-          url: "/api/v1/spots"
+          url: "/spots"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Create spot
       - post:
-          url: "/api/v1/spots"
+          url: "/spots"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -182,13 +182,13 @@ scenarios:
       
       # Get spot by ID
       - get:
-          url: "/api/v1/spots/{{ spotId }}"
+          url: "/spots/{{ spotId }}"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Update spot
       - patch:
-          url: "/api/v1/spots/{{ spotId }}"
+          url: "/spots/{{ spotId }}"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -198,13 +198,13 @@ scenarios:
       # === FLIGHTS MANAGEMENT ===
       # Get all flights
       - get:
-          url: "/api/v1/flights"
+          url: "/flights"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Create flight
       - post:
-          url: "/api/v1/flights"
+          url: "/flights"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -228,7 +228,7 @@ scenarios:
       
       # Update flight
       - patch:
-          url: "/api/v1/flights/{{ flightId }}"
+          url: "/flights/{{ flightId }}"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -238,20 +238,20 @@ scenarios:
       # === SOCIAL FEATURES ===
       # Get feeds
       - get:
-          url: "/api/v1/feeds"
+          url: "/feeds"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Get followed feeds
       - get:
-          url: "/api/v1/feeds/following"
+          url: "/feeds/following"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # === LIKES SYSTEM ===
       # Like drone
       - post:
-          url: "/api/v1/likes/toggle"
+          url: "/likes/toggle"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -260,7 +260,7 @@ scenarios:
       
       # Like flight
       - post:
-          url: "/api/v1/likes/toggle"
+          url: "/likes/toggle"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -269,22 +269,22 @@ scenarios:
       
       # Get like counts
       - get:
-          url: "/api/v1/likes/count?targetType=drone&targetId={{ droneId }}"
+          url: "/likes/count?targetType=drone&targetId={{ droneId }}"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # === GROUPS MANAGEMENT ===
       # Get all groups
       - get:
-          url: "/api/v1/groups"
+          url: "/groups"
       
       # Search groups
       - get:
-          url: "/api/v1/groups/search?q=racing"
+          url: "/groups/search?q=racing"
       
       # Create group
       - post:
-          url: "/api/v1/groups"
+          url: "/groups"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -298,18 +298,18 @@ scenarios:
       
       # Get group by ID
       - get:
-          url: "/api/v1/groups/{{ groupId }}"
+          url: "/groups/{{ groupId }}"
       
       # Get group members
       - get:
-          url: "/api/v1/groups/{{ groupId }}/members"
+          url: "/groups/{{ groupId }}/members"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # === GROUP TOPICS ===
       # Create topic in group
       - post:
-          url: "/api/v1/groups/{{ groupId }}/topics"
+          url: "/groups/{{ groupId }}/topics"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -321,11 +321,11 @@ scenarios:
       
       # Get group topics
       - get:
-          url: "/api/v1/groups/{{ groupId }}/topics"
+          url: "/groups/{{ groupId }}/topics"
       
       # Update topic
       - patch:
-          url: "/api/v1/groups/{{ groupId }}/topics/{{ topicId }}"
+          url: "/groups/{{ groupId }}/topics/{{ topicId }}"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -334,7 +334,7 @@ scenarios:
       # === TOPIC COMMENTS ===
       # Create comment on topic
       - post:
-          url: "/api/v1/topics/{{ topicId }}/comments"
+          url: "/topics/{{ topicId }}/comments"
           headers:
             Authorization: "Bearer {{ accessToken }}"
           json:
@@ -345,35 +345,35 @@ scenarios:
       
       # Get topic comments
       - get:
-          url: "/api/v1/topics/{{ topicId }}/comments"
+          url: "/topics/{{ topicId }}/comments"
       
       # Like comment
       - post:
-          url: "/api/v1/topics/comments/{{ commentId }}/like"
+          url: "/topics/comments/{{ commentId }}/like"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # === AERONAUTICS DATA ===
       # Get aeronautics data
       - get:
-          url: "/api/v1/aeronautics"
+          url: "/aeronautics"
       
       # === USER MANAGEMENT ===
       # Get user's spots
       - get:
-          url: "/api/v1/users/spots"
+          url: "/users/spots"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Get user's drones
       - get:
-          url: "/api/v1/users/drones"
+          url: "/users/drones"
           headers:
             Authorization: "Bearer {{ accessToken }}"
       
       # Get user's flights
       - get:
-          url: "/api/v1/users/flights"
+          url: "/users/flights"
           headers:
             Authorization: "Bearer {{ accessToken }}"
 
@@ -383,19 +383,19 @@ scenarios:
       - get:
           url: "/health"
       - get:
-          url: "/api/v1/spots"
+          url: "/spots"
       - get:
-          url: "/api/v1/drone-types"
+          url: "/drone-types"
       - get:
-          url: "/api/v1/drone-brands"
+          url: "/drone-brands"
       - get:
-          url: "/api/v1/components"
+          url: "/components"
       - get:
-          url: "/api/v1/groups"
+          url: "/groups"
       - get:
-          url: "/api/v1/groups/search?q=fpv"
+          url: "/groups/search?q=fpv"
       - get:
-          url: "/api/v1/aeronautics"
+          url: "/aeronautics"
 
   - name: "Anonymous User Journey"
     weight: 10
@@ -403,8 +403,8 @@ scenarios:
       - get:
           url: "/health"
       - get:
-          url: "/api/v1/groups"
+          url: "/groups"
       - get:
-          url: "/api/v1/groups/search?q=racing"
+          url: "/groups/search?q=racing"
       - get:
-          url: "/api/v1/aeronautics"
+          url: "/aeronautics"

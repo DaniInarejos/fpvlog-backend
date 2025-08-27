@@ -1,0 +1,59 @@
+config:
+  target: "http://localhost:3000"
+  phases:
+    - duration: 2
+      arrivalRate: 1
+      name: "E2E Test Phase"
+  processor: "./test-functions-e2e.cjs"
+  
+scenarios:
+  - name: "Basic User Flow E2E Test"
+    weight: 100
+    flow:
+      - function: "generateTestData"
+      # Register new user
+      - post:
+          url: "/auth/register"
+          json:
+            email: "{{ uniqueEmail }}"
+            username: "{{ uniqueUsername }}"
+            password: "testpassword"
+            name: "Test"
+            lastName: "User"
+          expect:
+            - statusCode: 201
+      # Login
+      - post:
+          url: "/auth/login"
+          json:
+            email: "{{ uniqueEmail }}"
+            password: "testpassword"
+          capture:
+            - json: "$.token"
+              as: "accessToken"
+          expect:
+            - statusCode: 200
+      # Get user profile
+      - get:
+          url: "/users/profile"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          capture:
+            - json: "$._id"
+              as: "userId"
+          expect:
+            - statusCode: 200 
+      - patch:
+          url: "/users/{{ userId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            socialMedia:
+              facebook: "https://facebook.com/{{ testTag }}"
+              youtube: "https://youtube.com/@{{ testTag }}"
+              instagram: "https://instagram.com/{{ testTag }}"
+              tiktok: "https://tiktok.com/@{{ testTag }}"
+              linkedin: "https://linkedin.com/in/{{ testTag }}"
+              x: "https://x.com/{{ testTag }}"
+          expect:
+            - statusCode: 200
