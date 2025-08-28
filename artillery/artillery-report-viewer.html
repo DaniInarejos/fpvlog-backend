@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Artillery Performance Report Viewer</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+        }
+        
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+        
+        .content {
+            padding: 30px;
+        }
+        
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .metric-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            text-align: center;
+            border-left: 5px solid #3498db;
+            transition: transform 0.3s ease;
+        }
+        
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .metric-value {
+            font-size: 2.5em;
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 5px;
+        }
+        
+        .metric-label {
+            color: #7f8c8d;
+            font-size: 0.9em;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        
+        .charts-section {
+            margin-bottom: 40px;
+        }
+        
+        .chart-container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 30px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .chart-title {
+            font-size: 1.5em;
+            color: #2c3e50;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .analysis-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-top: 40px;
+        }
+        
+        .analysis-card {
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .strengths {
+            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
+            color: white;
+        }
+        
+        .weaknesses {
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+        }
+        
+        .analysis-title {
+            font-size: 1.8em;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .analysis-list {
+            list-style: none;
+        }
+        
+        .analysis-list li {
+            margin-bottom: 15px;
+            padding-left: 25px;
+            position: relative;
+        }
+        
+        .analysis-list li:before {
+            content: "✓";
+            position: absolute;
+            left: 0;
+            font-weight: bold;
+            font-size: 1.2em;
+        }
+        
+        .weaknesses .analysis-list li:before {
+            content: "⚠";
+        }
+        
+        .loading {
+            text-align: center;
+            padding: 50px;
+            font-size: 1.2em;
+            color: #7f8c8d;
+        }
+        
+        .error {
+            background: #e74c3c;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        @media (max-width: 768px) {
+            .analysis-section {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🚁 Artillery Performance Report</h1>
+            <p>Análisis completo de rendimiento de tu API FPVLog</p>
+        </div>
+        
+        <div class="content">
+            <div id="loading" class="loading">
+                Cargando datos del reporte...
+            </div>
+            
+            <div id="error" class="error" style="display: none;">
+                Error al cargar el archivo reporte.json. Asegúrate de que el archivo existe en la misma carpeta.
+            </div>
+            
+            <div id="report-content" style="display: none;">
+                <div class="metrics-grid" id="metrics-grid">
+                    <!-- Métricas se cargarán aquí -->
+                </div>
+                
+                <div class="charts-section">
+                    <div class="chart-container">
+                        <h3 class="chart-title">Tiempos de Respuesta por Endpoint</h3>
+                        <canvas id="responseTimeChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3 class="chart-title">Distribución de Códigos de Estado HTTP</h3>
+                        <canvas id="statusCodesChart"></canvas>
+                    </div>
+                    
+                    <div class="chart-container">
+                        <h3 class="chart-title">Percentiles de Tiempo de Respuesta</h3>
+                        <canvas id="percentilesChart"></canvas>
+                    </div>
+                </div>
+                
+                <div class="analysis-section">
+                    <div class="analysis-card strengths">
+                        <h3 class="analysis-title">💪 Puntos Fuertes</h3>
+                        <ul class="analysis-list" id="strengths-list">
+                            <!-- Se llenarán dinámicamente -->
+                        </ul>
+                    </div>
+                    
+                    <div class="analysis-card weaknesses">
+                        <h3 class="analysis-title">⚠️ Áreas de Mejora</h3>
+                        <ul class="analysis-list" id="weaknesses-list">
+                            <!-- Se llenarán dinámicamente -->
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let reportData = null;
+        
+        // Cargar datos del reporte
+        async function loadReport() {
+            try {
+                const response = await fetch('./reporte.json');
+                if (!response.ok) {
+                    throw new Error('No se pudo cargar el archivo');
+                }
+                reportData = await response.json();
+                displayReport();
+            } catch (error) {
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                console.error('Error loading report:', error);
+            }
+        }
+        
+        // Mostrar el reporte
+        function displayReport() {
+            document.getElementById('loading').style.display = 'none';
+            document.getElementById('report-content').style.display = 'block';
+            
+            displayMetrics();
+            createCharts();
+            performAnalysis();
+        }
+        
+        // Mostrar métricas principales
+        function displayMetrics() {
+            const aggregate = reportData.aggregate;
+            const metricsGrid = document.getElementById('metrics-grid');
+            
+            const metrics = [
+                {
+                    label: 'Total Requests',
+                    value: aggregate.counters['http.requests'] || 0,
+                    color: '#3498db'
+                },
+                {
+                    label: 'Success Rate',
+                    value: `${((aggregate.counters['http.codes.200'] + aggregate.counters['http.codes.201']) / aggregate.counters['http.responses'] * 100).toFixed(1)}%`,
+                    color: '#2ecc71'
+                },
+                {
+                    label: 'Avg Response Time',
+                    value: `${aggregate.summaries['http.response_time'].mean.toFixed(0)}ms`,
+                    color: '#f39c12'
+                },
+                {
+                    label: 'Failed Users',
+                    value: aggregate.counters['vusers.failed'] || 0,
+                    color: '#e74c3c'
+                },
+                {
+                    label: 'Request Rate',
+                    value: `${aggregate.rates['http.request_rate'] || 0}/s`,
+                    color: '#9b59b6'
+                },
+                {
+                    label: 'P95 Response Time',
+                    value: `${aggregate.summaries['http.response_time'].p95.toFixed(0)}ms`,
+                    color: '#34495e'
+                }
+            ];
+            
+            metricsGrid.innerHTML = metrics.map(metric => `
+                <div class="metric-card" style="border-left-color: ${metric.color}">
+                    <div class="metric-value" style="color: ${metric.color}">${metric.value}</div>
+                    <div class="metric-label">${metric.label}</div>
+                </div>
+            `).join('');
+        }
+        
+        // Crear gráficos
+        function createCharts() {
+            createResponseTimeChart();
+            createStatusCodesChart();
+            createPercentilesChart();
+        }
+        
+        // Gráfico de tiempos de respuesta por endpoint
+        function createResponseTimeChart() {
+            const ctx = document.getElementById('responseTimeChart').getContext('2d');
+            const summaries = reportData.aggregate.summaries;
+            
+            const endpointData = [];
+            Object.keys(summaries).forEach(key => {
+                if (key.includes('plugins.metrics-by-endpoint.response_time.')) {
+                    const endpoint = key.replace('plugins.metrics-by-endpoint.response_time.', '');
+                    endpointData.push({
+                        endpoint: endpoint,
+                        mean: summaries[key].mean,
+                        p95: summaries[key].p95
+                    });
+                }
+            });
+            
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: endpointData.map(d => d.endpoint),
+                    datasets: [
+                        {
+                            label: 'Tiempo Promedio (ms)',
+                            data: endpointData.map(d => d.mean),
+                            backgroundColor: 'rgba(52, 152, 219, 0.8)',
+                            borderColor: 'rgba(52, 152, 219, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'P95 (ms)',
+                            data: endpointData.map(d => d.p95),
+                            backgroundColor: 'rgba(231, 76, 60, 0.8)',
+                            borderColor: 'rgba(231, 76, 60, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Tiempo (ms)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Endpoints'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico de códigos de estado
+        function createStatusCodesChart() {
+            const ctx = document.getElementById('statusCodesChart').getContext('2d');
+            const counters = reportData.aggregate.counters;
+            
+            const statusCodes = {
+                '200': counters['http.codes.200'] || 0,
+                '201': counters['http.codes.201'] || 0,
+                'Errors': counters['errors.ETIMEDOUT'] || 0
+            };
+            
+            new Chart(ctx, {
+                type: 'doughnut',
+                data: {
+                    labels: Object.keys(statusCodes),
+                    datasets: [{
+                        data: Object.values(statusCodes),
+                        backgroundColor: [
+                            '#2ecc71',
+                            '#3498db',
+                            '#e74c3c'
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#fff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Gráfico de percentiles
+        function createPercentilesChart() {
+            const ctx = document.getElementById('percentilesChart').getContext('2d');
+            const responseTime = reportData.aggregate.summaries['http.response_time'];
+            
+            new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: ['P50', 'P75', 'P90', 'P95', 'P99'],
+                    datasets: [{
+                        label: 'Tiempo de Respuesta (ms)',
+                        data: [
+                            responseTime.p50,
+                            responseTime.p75,
+                            responseTime.p90,
+                            responseTime.p95,
+                            responseTime.p99
+                        ],
+                        borderColor: '#9b59b6',
+                        backgroundColor: 'rgba(155, 89, 182, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Tiempo (ms)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+        
+        // Análisis de puntos fuertes y débiles
+        function performAnalysis() {
+            const aggregate = reportData.aggregate;
+            const counters = aggregate.counters;
+            const summaries = aggregate.summaries;
+            
+            const strengths = [];
+            const weaknesses = [];
+            
+            // Análisis de tasa de éxito
+            const successRate = ((counters['http.codes.200'] + counters['http.codes.201']) / counters['http.responses'] * 100);
+            if (successRate > 95) {
+                strengths.push(`Excelente tasa de éxito: ${successRate.toFixed(1)}%`);
+            } else if (successRate < 90) {
+                weaknesses.push(`Tasa de éxito baja: ${successRate.toFixed(1)}% (objetivo: >95%)`);
+            }
+            
+            // Análisis de tiempo de respuesta
+            const avgResponseTime = summaries['http.response_time'].mean;
+            if (avgResponseTime < 1000) {
+                strengths.push(`Tiempo de respuesta promedio excelente: ${avgResponseTime.toFixed(0)}ms`);
+            } else if (avgResponseTime > 3000) {
+                weaknesses.push(`Tiempo de respuesta promedio alto: ${avgResponseTime.toFixed(0)}ms (objetivo: <1000ms)`);
+            }
+            
+            // Análisis de P95
+            const p95 = summaries['http.response_time'].p95;
+            if (p95 < 2000) {
+                strengths.push(`P95 dentro del rango aceptable: ${p95.toFixed(0)}ms`);
+            } else {
+                weaknesses.push(`P95 alto: ${p95.toFixed(0)}ms (objetivo: <2000ms)`);
+            }
+            
+            // Análisis de errores
+            const errorRate = (counters['vusers.failed'] / counters['vusers.created'] * 100);
+            if (errorRate < 5) {
+                strengths.push(`Baja tasa de errores: ${errorRate.toFixed(1)}%`);
+            } else {
+                weaknesses.push(`Tasa de errores alta: ${errorRate.toFixed(1)}% (objetivo: <5%)`);
+            }
+            
+            // Análisis de throughput
+            const requestRate = aggregate.rates['http.request_rate'];
+            if (requestRate > 20) {
+                strengths.push(`Buen throughput: ${requestRate} requests/segundo`);
+            } else {
+                weaknesses.push(`Throughput bajo: ${requestRate} requests/segundo`);
+            }
+            
+            // Análisis específico de endpoints
+            const registerTime = summaries['plugins.metrics-by-endpoint.response_time./auth/register']?.mean;
+            if (registerTime && registerTime > 3000) {
+                weaknesses.push(`Endpoint de registro lento: ${registerTime.toFixed(0)}ms`);
+            }
+            
+            const droneEndpointTime = summaries['plugins.metrics-by-endpoint.response_time./drones']?.mean;
+            if (droneEndpointTime && droneEndpointTime < 2000) {
+                strengths.push(`Endpoint de drones eficiente: ${droneEndpointTime.toFixed(0)}ms`);
+            }
+            
+            // Análisis de timeouts
+            if (counters['errors.ETIMEDOUT']) {
+                weaknesses.push(`${counters['errors.ETIMEDOUT']} timeouts detectados - revisar configuración de red`);
+            } else {
+                strengths.push('Sin timeouts detectados - conexión estable');
+            }
+            
+            // Mostrar análisis
+            document.getElementById('strengths-list').innerHTML = strengths.map(s => `<li>${s}</li>`).join('');
+            document.getElementById('weaknesses-list').innerHTML = weaknesses.map(w => `<li>${w}</li>`).join('');
+        }
+        
+        // Cargar el reporte al cargar la página
+        window.addEventListener('load', loadReport);
+    </script>
+</body>
+</html>

@@ -1,162 +1,179 @@
-// src/db/mongo.ts
-import mongoose from 'mongoose'
-import { logger } from '../utils/logger'
+import mongoose from 'mongoose';
+import { logger } from '../utils/logger';
 
 interface DatabaseConfig {
-  maxRetries: number
-  retryInterval: number
-  timeout: number
-  maxPoolSize: number
-  maxIdleTimeMS: number
-  serverSelectionTimeoutMS: number
-  socketTimeoutMS: number
-  heartbeatFrequencyMS?: number
+  readonly maxRetries: number;
+  readonly retryInterval: number;
+  readonly maxPoolSize: number;
+  readonly maxIdleTimeMS: number;
+  readonly serverSelectionTimeoutMS: number;
+  readonly socketTimeoutMS: number;
 }
 
-const dbConfig: DatabaseConfig = {
-  maxRetries: 2,
-  retryInterval: 5000,               // 5s entre intentos
-  timeout: 10000,                    // no usado directamente, mantenido por compat
-  maxPoolSize: 20,
-  maxIdleTimeMS: 180000,             // 3min para adelgazar el pool en reposo
-  serverSelectionTimeoutMS: 10000,   // 10s para elegir servidor
-  socketTimeoutMS: 45000,            // 45s inactividad de socket
-  // heartbeatFrequencyMS: 10000,    // deja el default o descomenta si quieres 10s
-}
-
-// ---------- Utilidades ----------
-const formatError = (error: any): string => {
-  if (error?.code === 8000 && error?.codeName === 'AtlasError') {
-    return 'Error de autenticación: Credenciales inválidas'
-  }
-  return error?.message || 'Error desconocido'
-}
-
-// ---------- Estado global para evitar duplicados ----------
-declare global {
-  // Promesa singleton de conexión
-  // eslint-disable-next-line no-var
-  var __mongooseConnPromise: Promise<typeof mongoose> | null
-  // Para no registrar listeners múltiples
-  // eslint-disable-next-line no-var
-  var __mongooseListenersAttached: boolean | undefined
-}
-global.__mongooseConnPromise ??= null
-global.__mongooseListenersAttached ??= false
-
-// ---------- Listeners (una sola vez) ----------
-const attachConnectionListenersOnce = () => {
-  if (global.__mongooseListenersAttached) return
-  global.__mongooseListenersAttached = true
-
-  mongoose.connection.on('disconnected', () => {
-    logger.info('🔌 MongoDB disconnected')
-  })
-
-  mongoose.connection.on('error', (error) => {
-    const formattedError = formatError(error)
-    logger.error('🚨 MongoDB connection error:', formattedError)
-  })
-}
-
-// ---------- Señales de cierre ordenado ----------
-const graceful = async (signal: string) => {
-  try {
-    await mongoose.connection.close()
-    logger.info(`MongoDB connection closed due to ${signal}`)
-  } catch (err) {
-    logger.warn(`Error closing MongoDB on ${signal}: ${formatError(err)}`)
-  } finally {
-    process.exit(0)
+class DatabaseError extends Error {
+  constructor(message: string, public readonly code?: number) {
+    super(message);
+    this.name = 'DatabaseError';
   }
 }
 
-process.on('SIGINT', () => graceful('SIGINT'))
-process.on('SIGTERM', () => graceful('SIGTERM'))
+const DB_CONFIG: DatabaseConfig = {
+  maxRetries: 3,
+  retryInterval: 5000,
+  maxPoolSize: 10,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 20000,
+} as const;
 
-// ---------- Conexión con reintentos y protección anti-duplicados ----------
-const connectWithRetry = async (retryCount = 0): Promise<void> => {
-  const mongoUri = process.env.MONGO_URI
-  if (!mongoUri) {
-    throw new Error('MONGO_URI environment variable not defined')
+class DatabaseConnection {
+  private static instance: DatabaseConnection;
+  private connectionPromise: Promise<typeof mongoose> | null = null;
+  private isShuttingDown = false;
+
+  private constructor() {
+    this.setupGracefulShutdown();
+    this.attachConnectionListeners();
   }
 
-  // Si ya hay una conexión establecida, no hagas nada
-  if (mongoose.connection.readyState === 1) {
-    logger.info('✅ MongoDB already connected — reusing existing pool')
-    attachConnectionListenersOnce()
-    return
+  public static getInstance(): DatabaseConnection {
+    if (!DatabaseConnection.instance) {
+      DatabaseConnection.instance = new DatabaseConnection();
+    }
+    return DatabaseConnection.instance;
   }
 
-  // Si está conectando, espera a la promesa existente
-  if (mongoose.connection.readyState === 2 && global.__mongooseConnPromise) {
-    logger.info('⏳ MongoDB is currently connecting — awaiting existing connection')
-    attachConnectionListenersOnce()
-    await global.__mongooseConnPromise
-    return
+  private formatError(error: any): string {
+    if (error?.code === 8000) return 'Credenciales inválidas';
+    if (error?.code === 'ENOTFOUND') return 'Host no encontrado';
+    if (error?.code === 'ECONNREFUSED') return 'Conexión rechazada';
+    return error?.message || 'Error desconocido';
   }
 
-  // Si existe promesa anterior pero el estado no es connecting, resetea
-  if (global.__mongooseConnPromise && mongoose.connection.readyState !== 2) {
-    global.__mongooseConnPromise = null
+  private attachConnectionListeners(): void {
+    mongoose.connection.on('disconnected', () => {
+      if (!this.isShuttingDown) {
+        logger.warn('MongoDB desconectado inesperadamente');
+        this.connectionPromise = null;
+      }
+    });
+
+    mongoose.connection.on('error', (error) => {
+      logger.error('Error MongoDB:', this.formatError(error));
+    });
   }
 
-  try {
-    const options: mongoose.ConnectOptions = {
-      // Pooling
-      maxPoolSize: dbConfig.maxPoolSize,
-      // minPoolSize NO establecido (por defecto 0) para evitar coste fijo y fugas al reiniciar
-      maxIdleTimeMS: dbConfig.maxIdleTimeMS,
+  private setupGracefulShutdown(): void {
+    const shutdown = async (signal: string) => {
+      this.isShuttingDown = true;
+      try {
+        await this.forceDisconnect();
+        logger.info(`MongoDB cerrado por ${signal}`);
+      } catch (error) {
+        logger.error('Error en cierre:', this.formatError(error));
+      }
+      process.exit(0);
+    };
 
-      // Timeouts
-      serverSelectionTimeoutMS: dbConfig.serverSelectionTimeoutMS,
-      socketTimeoutMS: dbConfig.socketTimeoutMS,
+    process.once('SIGINT', () => shutdown('SIGINT'));
+    process.once('SIGTERM', () => shutdown('SIGTERM'));
+  }
 
-      // Otros
+  private getConnectionOptions(): mongoose.ConnectOptions {
+    return {
+      maxPoolSize: DB_CONFIG.maxPoolSize,
+      maxIdleTimeMS: DB_CONFIG.maxIdleTimeMS,
+      serverSelectionTimeoutMS: DB_CONFIG.serverSelectionTimeoutMS,
+      socketTimeoutMS: DB_CONFIG.socketTimeoutMS,
       bufferCommands: false,
-      // ...(dbConfig.heartbeatFrequencyMS ? { heartbeatFrequencyMS: dbConfig.heartbeatFrequencyMS } : {}),
+    };
+  }
+
+  public async connect(retryCount = 0): Promise<void> {
+    const mongoUri = process.env.MONGO_URI;
+    
+    if (!mongoUri) {
+      throw new DatabaseError('MONGO_URI no definida');
     }
 
-    attachConnectionListenersOnce()
+    if (mongoose.connection.readyState === 1) {
+      return;
+    }
 
-    // Crea y guarda la promesa singleton antes de await para deduplicar llamados concurrentes
-    global.__mongooseConnPromise = mongoose.connect(mongoUri, options)
-    await global.__mongooseConnPromise
+    if (mongoose.connection.readyState === 2 && this.connectionPromise) {
+      await this.connectionPromise;
+      return;
+    }
 
-    logger.info('✅ MongoDB connected successfully')
-  } catch (error) {
-    const formattedError = formatError(error)
-    logger.error(`❌ Connection attempt ${retryCount + 1}/${dbConfig.maxRetries + 1} failed: ${formattedError}`)
-
-    // Importantísimo: cierra cualquier estado parcial antes de reintentar
     try {
-      await mongoose.disconnect()
+      this.connectionPromise = mongoose.connect(mongoUri, this.getConnectionOptions());
+      await this.connectionPromise;
+      logger.info('MongoDB conectado');
+    } catch (error) {
+      await this.cleanupConnection();
+      
+      if (retryCount < DB_CONFIG.maxRetries) {
+        logger.warn(`Reintento ${retryCount + 1}/${DB_CONFIG.maxRetries}`);
+        await this.delay(DB_CONFIG.retryInterval);
+        return this.connect(retryCount + 1);
+      }
+      
+      throw new DatabaseError(`Conexión falló: ${this.formatError(error)}`);
+    }
+  }
+
+  private async cleanupConnection(): Promise<void> {
+    try {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+      }
     } catch {
-      // ignore
+      // Ignorar errores de limpieza
+    } finally {
+      this.connectionPromise = null;
     }
-    global.__mongooseConnPromise = null
+  }
 
-    if (retryCount < dbConfig.maxRetries) {
-      const seconds = Math.round(dbConfig.retryInterval / 1000)
-      logger.info(`🔄 Retrying connection in ${seconds} seconds...`)
-      await new Promise((resolve) => setTimeout(resolve, dbConfig.retryInterval))
-      return connectWithRetry(retryCount + 1)
+  public async forceDisconnect(): Promise<void> {
+    try {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.connection.close(true);
+      }
+      this.connectionPromise = null;
+    } catch (error) {
+      throw new DatabaseError(`Error desconectando: ${this.formatError(error)}`);
     }
+  }
 
-    logger.error('❌ Maximum number of attempts reached. Exiting process.')
-    process.exit(1)
+  public isConnected(): boolean {
+    return mongoose.connection.readyState === 1;
+  }
+
+  public async healthCheck(): Promise<boolean> {
+    try {
+      if (!this.isConnected()) return false;
+      if (mongoose.connection.db) {
+        await mongoose.connection.db.admin().ping();
+      } else {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
-// ---------- API opcional para cerrar manualmente ----------
-export const disconnectFromMongo = async () => {
-  try {
-    await mongoose.disconnect()
-    global.__mongooseConnPromise = null
-    logger.info('🔒 MongoDB disconnected manually')
-  } catch (err) {
-    logger.warn(`Error on manual disconnect: ${formatError(err)}`)
-  }
-}
+const dbConnection = DatabaseConnection.getInstance();
 
-export default connectWithRetry
+export const connectToDatabase = (): Promise<void> => dbConnection.connect();
+export const disconnectFromDatabase = (): Promise<void> => dbConnection.forceDisconnect();
+export const isDatabaseConnected = (): boolean => dbConnection.isConnected();
+export const databaseHealthCheck = (): Promise<boolean> => dbConnection.healthCheck();
+
+export default connectToDatabase;
+export { DatabaseError };

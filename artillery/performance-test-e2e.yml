@@ -1,0 +1,183 @@
+config:
+  target: "https://fpvlog-backend.onrender.com"
+  phases:
+    # Fase de calentamiento - 1 usuario por 30 segundos
+    - duration: 30
+      arrivalRate: 1
+      name: "Warmup Phase"
+    # Fase de carga media - 2 usuarios concurrentes por 4 minutos
+    - duration: 240
+      arrivalRate: 2
+      name: "Medium Load Phase"
+    # Fase de pico - 3 usuarios concurrentes por 30 segundos
+    - duration: 30
+      arrivalRate: 3
+      name: "Peak Load Phase"
+  processor: "./test-functions-e2e.cjs"
+  
+scenarios:
+  - name: "Basic User Flow E2E Test"
+    weight: 50
+    flow:
+      - function: "generateTestData"
+      # Register new user
+      - post:
+          url: "/auth/register"
+          json:
+            email: "{{ uniqueEmail }}"
+            username: "{{ uniqueUsername }}"
+            password: "testpassword"
+            name: "Test"
+            lastName: "User"
+          expect:
+            - statusCode: 201
+      # Login
+      - post:
+          url: "/auth/login"
+          json:
+            email: "{{ uniqueEmail }}"
+            password: "testpassword"
+          capture:
+            - json: "$.token"
+              as: "accessToken"
+          expect:
+            - statusCode: 200
+      # Get user profile
+      - get:
+          url: "/users/profile"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          capture:
+            - json: "$._id"
+              as: "userId"
+            - json: "$.username"
+              as: "testUsername"
+          expect:
+            - statusCode: 200 
+      - patch:
+          url: "/users/{{ userId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            socialMedia:
+              facebook: "https://facebook.com/{{ testTag }}"
+              youtube: "https://youtube.com/@{{ testTag }}"
+              instagram: "https://instagram.com/{{ testTag }}"
+              tiktok: "https://tiktok.com/@{{ testTag }}"
+              linkedin: "https://linkedin.com/in/{{ testTag }}"
+              x: "https://x.com/{{ testTag }}"
+          expect:
+            - statusCode: 200
+        # Get user dashboard
+      - get:
+          url: "/users/dashboard/{{ testUsername }}"
+          expect:
+            - statusCode: 200
+          think: 1
+      - function: "generateDroneData"
+      # Create first drone (Custom)
+      - post:
+          url: "/drones"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "Custom Drone {{ testTag }}"
+            originType: "CUSTOM"
+            weight: 250
+            frameSize: 5
+            description: "Custom built racing drone"
+            visibility: "PUBLIC"
+          capture:
+            - json: "$._id"
+              as: "customDroneId"
+          expect:
+            - statusCode: 201
+      
+      # Create second drone (Branded)
+      - post:
+          url: "/drones"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "DJI Mini {{ testTag }}"
+            originType: "BRANDED"
+            model: "Mini 3 Pro"
+            serialNumber: "DJI{{ testTag }}001"
+            weight: 249
+            description: "DJI Mini drone for aerial photography"
+            visibility: "PUBLIC"
+          capture:
+            - json: "$._id"
+              as: "brandedDroneId"
+          expect:
+            - statusCode: 201
+      
+      # Create third drone (Racing)
+      - post:
+          url: "/drones"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            name: "Racing Beast {{ testTag }}"
+            originType: "CUSTOM"
+            weight: 180
+            frameSize: 3
+            description: "High-speed racing drone"
+            visibility: "PRIVATE"
+          capture:
+            - json: "$._id"
+              as: "racingDroneId"
+          expect:
+            - statusCode: 201
+      
+      # Update first drone
+      - patch:
+          url: "/drones/{{ customDroneId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            weight: 275
+            description: "Updated custom racing drone with new components"
+            notes: "Added new ESC and motors"
+          expect:
+            - statusCode: 200
+      
+      # Update second drone
+      - patch:
+          url: "/drones/{{ brandedDroneId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          json:
+            description: "Updated DJI Mini for professional photography"
+            notes: "Firmware updated to latest version"
+          expect:
+            - statusCode: 200
+      
+      # Get drones by user ID
+      - get:
+          url: "/users/{{ userId }}/drones"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+            - json: "$.length"
+              equals: 3
+      
+      # Get specific drone by ID
+      - get:
+          url: "/drones/{{ customDroneId }}"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+            - json: "$.name"
+              equals: "Custom Drone {{ testTag }}"
+      
+      # Get all drones (general listing)
+      - get:
+          url: "/drones"
+          headers:
+            Authorization: "Bearer {{ accessToken }}"
+          expect:
+            - statusCode: 200
+  
