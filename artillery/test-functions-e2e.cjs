@@ -17,6 +17,24 @@ function generateTestData(context, events, done) {
   }
 }
 
+function generateDroneData(context, events, done) {
+  const timestamp = Date.now();
+  const testTag = context.vars.testTag || 'artillery_' + timestamp;
+  
+  // Generate drone-specific data
+  context.vars.customDroneName = `Custom Drone ${testTag}`;
+  context.vars.brandedDroneName = `DJI Mini ${testTag}`;
+  context.vars.racingDroneName = `Racing Beast ${testTag}`;
+  context.vars.serialNumber = `DJI${testTag}001`;
+  
+  console.log(`Generated drone data for tag: ${testTag}`);
+  
+  if (typeof done === 'function') {
+    return done();
+  }
+}
+
 module.exports = {
-  generateTestData
+  generateTestData,
+  generateDroneData
 };

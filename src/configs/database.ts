@@ -1,80 +1,179 @@
-import mongoose from 'mongoose'
-import { logger } from '../utils/logger'
+import mongoose from 'mongoose';
+import { logger } from '../utils/logger';
 
 interface DatabaseConfig {
-  maxRetries: number
-  retryInterval: number
-  timeout: number
-  // 🆕 Nuevas configuraciones
-  maxPoolSize: number
-  minPoolSize: number
-  maxIdleTimeMS: number
+  readonly maxRetries: number;
+  readonly retryInterval: number;
+  readonly maxPoolSize: number;
+  readonly maxIdleTimeMS: number;
+  readonly serverSelectionTimeoutMS: number;
+  readonly socketTimeoutMS: number;
 }
 
-const dbConfig: DatabaseConfig = {
-  maxRetries: 2,
-  retryInterval: 5000,
-  timeout: 10000,
-  // 🔧 Configuración de Pool optimizada
-  maxPoolSize: 20,
-  minPoolSize: 5,
-  maxIdleTimeMS: 30000,
-}
-
-const formatError = (error: any): string => {
-  if (error.code === 8000 && error.codeName === 'AtlasError') {
-    return 'Error de autenticación: Credenciales inválidas'
+class DatabaseError extends Error {
+  constructor(message: string, public readonly code?: number) {
+    super(message);
+    this.name = 'DatabaseError';
   }
-  return error.message || 'Error desconocido'
 }
 
-const connectWithRetry = async (retryCount = 0): Promise<void> => {
-  try {
-    const mongoUri = process.env.MONGO_URI
+const DB_CONFIG: DatabaseConfig = {
+  maxRetries: 3,
+  retryInterval: 5000,
+  maxPoolSize: 10,
+  maxIdleTimeMS: 30000,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 20000,
+} as const;
+
+class DatabaseConnection {
+  private static instance: DatabaseConnection;
+  private connectionPromise: Promise<typeof mongoose> | null = null;
+  private isShuttingDown = false;
+
+  private constructor() {
+    this.setupGracefulShutdown();
+    this.attachConnectionListeners();
+  }
+
+  public static getInstance(): DatabaseConnection {
+    if (!DatabaseConnection.instance) {
+      DatabaseConnection.instance = new DatabaseConnection();
+    }
+    return DatabaseConnection.instance;
+  }
+
+  private formatError(error: any): string {
+    if (error?.code === 8000) return 'Credenciales inválidas';
+    if (error?.code === 'ENOTFOUND') return 'Host no encontrado';
+    if (error?.code === 'ECONNREFUSED') return 'Conexión rechazada';
+    return error?.message || 'Error desconocido';
+  }
+
+  private attachConnectionListeners(): void {
+    mongoose.connection.on('disconnected', () => {
+      if (!this.isShuttingDown) {
+        logger.warn('MongoDB desconectado inesperadamente');
+        this.connectionPromise = null;
+      }
+    });
+
+    mongoose.connection.on('error', (error) => {
+      logger.error('Error MongoDB:', this.formatError(error));
+    });
+  }
+
+  private setupGracefulShutdown(): void {
+    const shutdown = async (signal: string) => {
+      this.isShuttingDown = true;
+      try {
+        await this.forceDisconnect();
+        logger.info(`MongoDB cerrado por ${signal}`);
+      } catch (error) {
+        logger.error('Error en cierre:', this.formatError(error));
+      }
+      process.exit(0);
+    };
+
+    process.once('SIGINT', () => shutdown('SIGINT'));
+    process.once('SIGTERM', () => shutdown('SIGTERM'));
+  }
+
+  private getConnectionOptions(): mongoose.ConnectOptions {
+    return {
+      maxPoolSize: DB_CONFIG.maxPoolSize,
+      maxIdleTimeMS: DB_CONFIG.maxIdleTimeMS,
+      serverSelectionTimeoutMS: DB_CONFIG.serverSelectionTimeoutMS,
+      socketTimeoutMS: DB_CONFIG.socketTimeoutMS,
+      bufferCommands: false,
+    };
+  }
+
+  public async connect(retryCount = 0): Promise<void> {
+    const mongoUri = process.env.MONGO_URI;
     
     if (!mongoUri) {
-      throw new Error('MONGO_URI environment variable not defined')
+      throw new DatabaseError('MONGO_URI no definida');
     }
 
-    await mongoose.connect(mongoUri, {
-      heartbeatFrequencyMS: 2000,
-      maxPoolSize: dbConfig.maxPoolSize,
-      minPoolSize: dbConfig.minPoolSize,
-      maxIdleTimeMS: dbConfig.maxIdleTimeMS,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-      bufferCommands: false,
-    })
-
-    logger.info('✅ MongoDB connected successfully')
-  } catch (error) {
-    const formattedError = formatError(error)
-    logger.error(`❌ Connection attempt ${retryCount + 1}/${dbConfig.maxRetries + 1} failed: ${formattedError}`)
-
-    if (retryCount < dbConfig.maxRetries) {
-      logger.info(`🔄 Retrying connection in ${dbConfig.retryInterval / 1000} seconds...`)
-      await new Promise(resolve => setTimeout(resolve, dbConfig.retryInterval))
-      return connectWithRetry(retryCount + 1)
+    if (mongoose.connection.readyState === 1) {
+      return;
     }
 
-    logger.error('❌ Maximum number of attempts reached. Exiting process.')
-    process.exit(1)
+    if (mongoose.connection.readyState === 2 && this.connectionPromise) {
+      await this.connectionPromise;
+      return;
+    }
+
+    try {
+      this.connectionPromise = mongoose.connect(mongoUri, this.getConnectionOptions());
+      await this.connectionPromise;
+      logger.info('MongoDB conectado');
+    } catch (error) {
+      await this.cleanupConnection();
+      
+      if (retryCount < DB_CONFIG.maxRetries) {
+        logger.warn(`Reintento ${retryCount + 1}/${DB_CONFIG.maxRetries}`);
+        await this.delay(DB_CONFIG.retryInterval);
+        return this.connect(retryCount + 1);
+      }
+      
+      throw new DatabaseError(`Conexión falló: ${this.formatError(error)}`);
+    }
+  }
+
+  private async cleanupConnection(): Promise<void> {
+    try {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.disconnect();
+      }
+    } catch {
+      // Ignorar errores de limpieza
+    } finally {
+      this.connectionPromise = null;
+    }
+  }
+
+  public async forceDisconnect(): Promise<void> {
+    try {
+      if (mongoose.connection.readyState !== 0) {
+        await mongoose.connection.close(true);
+      }
+      this.connectionPromise = null;
+    } catch (error) {
+      throw new DatabaseError(`Error desconectando: ${this.formatError(error)}`);
+    }
+  }
+
+  public isConnected(): boolean {
+    return mongoose.connection.readyState === 1;
+  }
+
+  public async healthCheck(): Promise<boolean> {
+    try {
+      if (!this.isConnected()) return false;
+      if (mongoose.connection.db) {
+        await mongoose.connection.db.admin().ping();
+      } else {
+        return false;
+      }
+      return true;
+    } catch {
+      return false;
+    }
+  }
+
+  private delay(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
   }
 }
 
-mongoose.connection.on('disconnected', () => {
-  logger.info('🔌 MongoDB disconnected')
-})
+const dbConnection = DatabaseConnection.getInstance();
 
-mongoose.connection.on('error', (error) => {
-  const formattedError = formatError(error)
-  logger.error('🚨 MongoDB connection error:', formattedError)
-})
+export const connectToDatabase = (): Promise<void> => dbConnection.connect();
+export const disconnectFromDatabase = (): Promise<void> => dbConnection.forceDisconnect();
+export const isDatabaseConnected = (): boolean => dbConnection.isConnected();
+export const databaseHealthCheck = (): Promise<boolean> => dbConnection.healthCheck();
 
-process.on('SIGINT', async () => {
-  await mongoose.connection.close()
-  logger.info('MongoDB connection closed due to application termination')
-  process.exit(0)
-})
-
-export default connectWithRetry
+export default connectToDatabase;
+export { DatabaseError };
