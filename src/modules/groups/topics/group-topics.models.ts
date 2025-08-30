@@ -26,7 +26,7 @@ const groupTopicSchema = new Schema<IGroupTopic>({
   },
   description: {
     type: String,
-    maxlength: [5000, 'La descripción no puede exceder 5000 caracteres']
+    maxlength: [100000, 'La descripción no puede exceder 100000 caracteres']
   },
   createdBy: {
     type: Schema.Types.ObjectId,

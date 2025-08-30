@@ -30,7 +30,7 @@ const topicCommentSchema = new Schema<ITopicComment>({
   content: {
     type: String,
     required: true,
-    maxlength: 500,
+    maxlength: 100000,
     trim: true
   },
   parentId: {

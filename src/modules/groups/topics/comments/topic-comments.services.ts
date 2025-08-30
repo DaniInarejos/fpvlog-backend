@@ -18,12 +18,12 @@ import { checkMembershipService,getMemberService } from '../../members/group-mem
 
 // Esquemas de validación
 const createTopicCommentSchema = z.object({
-  content: z.string().min(1, 'El contenido es requerido').max(500, 'Máximo 500 caracteres'),
+  content: z.string().min(1, 'El contenido es requerido').max(100000, 'Máximo 100000 caracteres'),
   parentId: z.string().optional()
 })
 
 const updateTopicCommentSchema = z.object({
-  content: z.string().min(1, 'El contenido es requerido').max(500, 'Máximo 500 caracteres')
+  content: z.string().min(1, 'El contenido es requerido').max(100000, 'Máximo 100000 caracteres')
 })
 
 
