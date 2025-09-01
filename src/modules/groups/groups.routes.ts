@@ -23,6 +23,9 @@ const groupsRouter = new Hono()
 // Rutas públicas
 groupsRouter.get('/', getGroupsController)
 groupsRouter.get('/:id', getGroupController)
+// Rutas de topics, comentarios de posts y comentarios de topics
+groupsRouter.route('/', topicsRouter)
+groupsRouter.route('/', topicCommentsRouter) 
 
 // Rutas protegidas
 groupsRouter.use('/*', authMiddleware)
@@ -43,8 +46,5 @@ groupsRouter.patch('/:id', groupAdminMiddleware(), updateGroupController)
 groupsRouter.delete('/:id', groupOwnerMiddleware(), deleteGroupController)
 groupsRouter.post('/:id/transfer-ownership', groupOwnerMiddleware(), transferOwnershipController)
 
-// Rutas de topics, comentarios de posts y comentarios de topics
-groupsRouter.route('/', topicsRouter)
-groupsRouter.route('/', topicCommentsRouter) // Nueva ruta
 
 export default groupsRouter
