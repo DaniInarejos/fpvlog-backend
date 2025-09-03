@@ -3,9 +3,14 @@ import { IUser } from '../users/users.models'
 import UserModel from '../users/users.models'
 import { LoginDTO, RegisterDTO } from './auth.dto'
 import { getUserByIdService } from '../users/users.services'
+import { addMemberRepository } from '../groups/members/group-members.repository'
+import { Types } from 'mongoose'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
 const JWT_EXPIRES_IN = '24h'
+
+// ID del grupo por defecto al que se unirán todos los nuevos usuarios
+const DEFAULT_GROUP_ID = '688408178e71e9e9de944b1a'
 
 const generateToken = (user: IUser): string => {
   return jwt.sign(
@@ -32,6 +37,16 @@ export const register = async (userData: RegisterDTO): Promise<{ user: IUser; to
     const user = new UserModel(userData)
     await user.save()
 
+    // Automáticamente unir al usuario al grupo por defecto
+    try {
+      if (Types.ObjectId.isValid(DEFAULT_GROUP_ID)) {
+        await addMemberRepository(DEFAULT_GROUP_ID, user._id.toString(), 'MEMBER')
+      }
+    } catch (groupError) {
+      // Log el error pero no fallar el registro si hay problemas con el grupo
+      console.warn(`No se pudo agregar el usuario al grupo por defecto: ${groupError.message}`)
+    }
+
     const token = generateToken(user)
 
     const userResponse = user.toObject()
@@ -44,7 +59,14 @@ export const register = async (userData: RegisterDTO): Promise<{ user: IUser; to
 }
 
 export const login = async (credentials: LoginDTO): Promise<{ user: IUser; token: string }> => {
-    const user = await UserModel.findOne({ email: credentials.email })
+    // Primero buscar por email
+    let user = await UserModel.findOne({ email: credentials.email })
+    
+    // Si no se encuentra por email, buscar por username
+    if (!user) {
+      user = await UserModel.findOne({ username: { $regex: new RegExp(`^${credentials.email}$`, 'i') } })
+    }
+    
     if (!user) {
       throw new Error('Invalid credentials')
     }
