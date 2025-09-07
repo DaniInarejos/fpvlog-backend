@@ -30,7 +30,7 @@ export async function sendEmail(options: EmailOptions): Promise<EmailResult> {
     subject,
     html,
     text,
-    fromEmail = 'noreply@skysphere.app',
+    fromEmail = process.env.MAILERSEND_FROM_EMAIL || 'noreply@skysphere.app',
     fromName = 'SkySphere'
   } = options
 
@@ -157,7 +157,7 @@ export async function sendWelcomeEmail(
     subject,
     html,
     text,
-    fromEmail: 'info@trial-3z0vklo7jz0lqjrx.mlsender.net',
+    fromEmail: 'no-reply@skysphere.app',
     fromName: 'SkySphere'
   })
 }
@@ -175,7 +175,7 @@ export async function sendPasswordResetEmail(
   resetToken: string
 ): Promise<EmailResult> {
   const subject = '🔒 Recuperación de contraseña - SkySphere'
-  const resetUrl = `https://skysphere.com/restore-password?token=${resetToken}`
+  const resetUrl = `https://skysphere.app/restore-password?token=${resetToken}`
   
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -205,7 +205,7 @@ export async function sendPasswordResetEmail(
     subject,
     html,
     text,
-    fromEmail: 'info@trial-3z0vklo7jz0lqjrx.mlsender.net',
+    fromEmail: 'no-reply@skysphere.app',
     fromName: 'SkySphere'
   })
 }
