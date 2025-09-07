@@ -1,9 +1,11 @@
 import jwt from 'jsonwebtoken'
+import crypto from 'crypto'
 import { IUser } from '../users/users.models'
 import UserModel from '../users/users.models'
-import { LoginDTO, RegisterDTO } from './auth.dto'
+import { LoginDTO, RegisterDTO, RequestPasswordResetDTO, ResetPasswordDTO } from './auth.dto'
 import { getUserByIdService } from '../users/users.services'
 import { addMemberRepository } from '../groups/members/group-members.repository'
+import { sendWelcomeEmail, sendPasswordResetEmail } from '../../utils/mailer'
 import { Types } from 'mongoose'
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key'
@@ -48,6 +50,11 @@ export const register = async (userData: RegisterDTO): Promise<{ user: IUser; to
     }
 
     const token = generateToken(user)
+
+    // Send welcome email (non-blocking)
+    sendWelcomeEmail(user.email, user.username).catch(error => {
+      console.warn(`Failed to send welcome email to ${user.email}:`, error.error || error.message)
+    })
 
     const userResponse = user.toObject()
     delete userResponse.password
@@ -96,4 +103,52 @@ export const validateToken = async (token: string): Promise<IUser> => {
     return user
 }
 
-export default  {login, register, validateToken, generateToken}
+export const requestPasswordReset = async (data: RequestPasswordResetDTO): Promise<void> => {
+  try {
+    const user = await UserModel.findOne({ email: data.email })
+    
+    if (!user) {
+      // Por seguridad, no revelamos si el email existe o no
+      return
+    }
+
+    // Generar token seguro
+    const resetToken = crypto.randomBytes(32).toString('hex')
+    const resetTokenExpires = new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 horas
+
+    // Guardar token en la base de datos
+    user.resetPasswordToken = resetToken
+    user.resetPasswordExpires = resetTokenExpires
+    await user.save()
+
+    // Enviar email (non-blocking)
+    sendPasswordResetEmail(user.email, user.username, resetToken).catch(error => {
+      console.warn(`Failed to send password reset email to ${user.email}:`, error.error || error.message)
+    })
+  } catch (error) {
+    throw new Error(`Password reset request error: ${error.message}`)
+  }
+}
+
+export const resetPassword = async (data: ResetPasswordDTO): Promise<void> => {
+  try {
+    const user = await UserModel.findOne({
+      resetPasswordToken: data.token,
+      resetPasswordExpires: { $gt: new Date() }
+    })
+
+    if (!user) {
+      throw new Error('Invalid or expired reset token')
+    }
+
+    // Actualizar contraseña
+    user.password = data.newPassword
+    user.resetPasswordToken = undefined
+    user.resetPasswordExpires = undefined
+    await user.save()
+  } catch (error) {
+    throw new Error(`Password reset error: ${error.message}`)
+  }
+}
+
+export default { login, register, validateToken, generateToken, requestPasswordReset, resetPassword }

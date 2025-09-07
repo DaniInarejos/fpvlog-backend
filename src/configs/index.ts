@@ -16,5 +16,8 @@ export default {
     messagingSenderId: process.env.FIREBASE_MESSAGING_SENDER_ID,
     appId: process.env.FIREBASE_APP_ID,
     measurementId: process.env.FIREBASE_MEASUREMENT_ID,
+  },
+  mailer: {
+    apiKey: process.env.MAILERSEND_API_KEY,
   }
 }

@@ -12,6 +12,8 @@ export interface IUser extends Document {
   profilePicture?: string 
   followers: Types.ObjectId[]
   following: Types.ObjectId[]
+  resetPasswordToken?: string
+  resetPasswordExpires?: Date
   socialMedia: {
     facebook?: string
     youtube?: string
@@ -71,6 +73,14 @@ const userSchema = new Schema<IUser>({
     type: Schema.Types.ObjectId,
     ref: 'User'
   }],
+  resetPasswordToken: {
+    type: String,
+    required: false
+  },
+  resetPasswordExpires: {
+    type: Date,
+    required: false
+  },
   privacySettings: {
     allowFollowersToSeeFlights: {
       type: Boolean,

@@ -16,3 +16,12 @@ export interface AuthResponse {
   }
   token: string
 }
+
+export interface RequestPasswordResetDTO {
+  email: string
+}
+
+export interface ResetPasswordDTO {
+  token: string
+  newPassword: string
+}
