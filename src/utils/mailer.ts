@@ -139,7 +139,7 @@ export async function sendWelcomeEmail(
   const html = `
     <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
       <h1 style="color: #2563eb; text-align: center;">¡Hola ${username}!</h1>
-      <p style="font-size: 16px; line-height: 1.6;">Gracias por unirte a <strong>SkySphere</strong>.</p>
+      <p style="font-size: 16px; line-height: 1.6;">Gracias por unirte a <a href="https://skysphere.app/dashboard/${username}" style="color: #2563eb; text-decoration: none; font-weight: bold;">SkySphere</a>.</p>
       <p style="font-size: 16px; line-height: 1.6;">Aquí podrás compartir tus vuelos, descubrir componentes y formar parte de la comunidad FPV.</p>
       <div style="text-align: center; margin: 30px 0;">
         <p style="font-size: 18px; color: #2563eb;">🚀 ¡Nos vemos en el aire!</p>
