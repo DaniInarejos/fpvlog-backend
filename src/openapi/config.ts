@@ -352,10 +352,10 @@ export const components = {
           type: 'boolean',
           description: 'Si el tema está fijado'
         },
-        postsCount: {
-          type: 'integer',
-          description: 'Número de posts en el tema'
-        },
+        chatCount: {
+                  type: 'integer',
+                  description: 'Número de comentarios en el tema'
+                },
         lastActivity: {
           type: 'string',
           format: 'date-time',
@@ -372,7 +372,7 @@ export const components = {
           description: 'Fecha de última actualización'
         }
       },
-      required: ['_id', 'groupId', 'title', 'createdBy', 'isPinned', 'postsCount', 'lastActivity', 'createdAt']
+      required: ['_id', 'groupId', 'title', 'createdBy', 'isPinned', 'chatCount', 'lastActivity', 'createdAt']
     },
   GroupComment: {
       type: 'object',

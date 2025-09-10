@@ -6,7 +6,7 @@ export interface IGroupTopic extends Document {
   description?: string
   createdBy: Types.ObjectId
   isPinned: boolean
-  postsCount: number
+  chatCount: number
   lastActivity: Date
   createdAt: Date
   updatedAt?: Date
@@ -37,7 +37,7 @@ const groupTopicSchema = new Schema<IGroupTopic>({
     type: Boolean,
     default: false
   },
-  postsCount: {
+  chatCount: {
     type: Number,
     default: 0
   },

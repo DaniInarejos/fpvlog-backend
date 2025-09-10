@@ -17,7 +17,7 @@ export const findGroupByIdRepository = async (id: string): Promise<IGroup | null
   const cacheKey = `group:${id}`
   return await cacheService.loadData<IGroup | null>(
     cacheKey,
-    async () => await Group.findById(id).populate('createdBy', 'username name lastName profilePicture')
+    async () => await Group.findById(id).populate('createdBy', 'username')
   )
 }
 
@@ -25,7 +25,7 @@ export const findGroupsRepository = async (filters: any = {}, page = 1, limit = 
   const skip = (page - 1) * limit
   
   const query = Group.find(filters)
-    .populate('createdBy', 'username name lastName profilePicture')
+    .populate('createdBy', 'username')
     .sort({ createdAt: -1 })
     .skip(skip)
     .limit(limit)
@@ -52,7 +52,7 @@ export const updateGroupRepository = async (id: string, updateData: Partial<IGro
     id,
     { $set: { ...updateData, updatedAt: new Date() } },
     { new: true }
-  ).populate('createdBy', 'username name lastName profilePicture')
+  ).populate('createdBy', 'username')
   
   if (group) {
     await cacheService.deleteMany([`group:${id}`, 'groups:*'])
@@ -61,7 +61,7 @@ export const updateGroupRepository = async (id: string, updateData: Partial<IGro
   return group
 }
 
-export const deleteGroupRepository = async (id: string): Promise<boolean> => {
+export const deleteGroupRepository = async (id: string,userId:string): Promise<boolean> => {
   if (!Types.ObjectId.isValid(id)) {
     throw new Error('ID de grupo inválido4')
   }
@@ -69,7 +69,7 @@ export const deleteGroupRepository = async (id: string): Promise<boolean> => {
   const result = await Group.findByIdAndDelete(id)
   
   if (result) {
-    await cacheService.deleteMany([`group:${id}`, 'groups:*'])
+    await cacheService.deleteMany([`group:${id}`, 'groups:*', `user:${userId}:groups`])
     // También eliminar todos los miembros, posts y comentarios relacionados
     await GroupMember.deleteMany({ groupId: id })
   }
@@ -95,7 +95,7 @@ export const searchGroupsRepository = async (searchTerm: string, page = 1, limit
   
   const [groups, total] = await Promise.all([
     Group.find(query)
-      .populate('createdBy', 'username name lastName profilePicture')
+      .populate('createdBy', 'username')
       .sort({ membersCount: -1, createdAt: -1 })
       .skip(skip)
       .limit(limit),

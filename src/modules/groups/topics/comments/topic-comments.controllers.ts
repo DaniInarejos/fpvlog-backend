@@ -36,7 +36,7 @@ export const getTopicCommentsController = async (c: Context) => {
   try {
     const topicId = c.req.param('topicId')
     const user = c.get('user') // Puede ser undefined para usuarios no autenticados
-    const page = parseInt(c.req.query('page') || '1')
+    const page = Math.max(1, parseInt(c.req.query('page') || '1'))
     const limit = Math.min(parseInt(c.req.query('limit') || '10'), 50)
 
     const result = await getTopicCommentsService(topicId, user._id, page, limit)
@@ -59,7 +59,7 @@ export const getTopicCommentRepliesController = async (c: Context) => {
   try {
     const commentId = c.req.param('commentId')
     const userId = c.get('userId') // Puede ser undefined para usuarios no autenticados
-    const page = parseInt(c.req.query('page') || '1')
+    const page = Math.max(1, parseInt(c.req.query('page') || '1'))
     const limit = Math.min(parseInt(c.req.query('limit') || '10'), 50)
 
     const result = await getTopicCommentRepliesService(commentId, userId, page, limit)

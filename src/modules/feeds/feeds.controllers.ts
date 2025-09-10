@@ -3,7 +3,7 @@ import { getGlobalFeedService, getFollowingFeedService } from './feeds.services'
 
 export const getGlobalFeedController = async (c: Context) => {
   try {
-    const page = parseInt(c.req.query('page') || '1')
+    const page = Math.max(1, parseInt(c.req.query('page') || '1'))
     const limit = parseInt(c.req.query('limit') || '20')
     const lastTimestamp = c.req.query('lastTimestamp')
 
@@ -18,7 +18,7 @@ export const getGlobalFeedController = async (c: Context) => {
 export const getFollowingFeedController = async (c: Context) => {
   try {
     const {_id:userId} = c.get('user')
-    const page = parseInt(c.req.query('page') || '1')
+    const page = Math.max(1, parseInt(c.req.query('page') || '1'))
     const limit = parseInt(c.req.query('limit') || '20')
     const lastTimestamp = c.req.query('lastTimestamp')
 

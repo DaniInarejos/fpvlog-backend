@@ -3,6 +3,7 @@ import { cacheService } from '../../../../configs/cache'
 import { logger } from '../../../../utils/logger'
 // Cambiar la línea 2:
 import TopicComment, { ITopicComment } from './topic-comments.models'
+import { incrementChatCountRepository, decrementChatCountRepository } from '../group-topics.repository'
 
 // Crear comentario en topic
 export const createTopicCommentRepository = async (commentData: {
@@ -21,6 +22,9 @@ export const createTopicCommentRepository = async (commentData: {
 
     const savedComment = await comment.save()
     await savedComment.populate('authorId', 'username profilePicture')
+
+    // Incrementar contador de comentarios del topic
+    await incrementChatCountRepository(commentData.topicId)
 
     // Invalidar cache usando patrones - SOLUCIONADO
     await Promise.all([
@@ -174,9 +178,18 @@ export const deleteTopicCommentRepository = async (commentId: string): Promise<b
     const comment = await TopicComment.findById(commentId)
     if (!comment) return false
 
+    // Contar respuestas que se van a eliminar para decrementar chatCount
+    const repliesToDelete = await TopicComment.countDocuments({ parentId: new Types.ObjectId(commentId) })
+    
     await TopicComment.deleteMany({ parentId: new Types.ObjectId(commentId) })
     
     await TopicComment.findByIdAndDelete(commentId)
+
+    // Decrementar contador de comentarios del topic (comentario principal + respuestas)
+    const totalCommentsDeleted = 1 + repliesToDelete
+    for (let i = 0; i < totalCommentsDeleted; i++) {
+      await decrementChatCountRepository(comment.topicId.toString())
+    }
 
     // Invalidar cache usando patrones - SOLUCIONADO
     await Promise.all([

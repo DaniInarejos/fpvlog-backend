@@ -1,10 +1,18 @@
 import { Types } from 'mongoose'
 import GroupTopic, { IGroupTopic } from './group-topics.models'
+import Group from '../groups.models'
 import { cacheService } from '../../../configs/cache'
 
 export const createTopicRepository = async (topicData: Partial<IGroupTopic>): Promise<IGroupTopic> => {
   const topic = await GroupTopic.create(topicData)
-  await cacheService.deletePattern(`group:${topicData.groupId}:topics:*`)
+  
+  // Incrementar contador de posts en el grupo
+  if (topicData.groupId) {
+    await incrementGroupPostCountRepository(topicData.groupId.toString())
+  }
+    console.log(`group:${topicData.groupId}`)
+   await cacheService.deletePattern(`group:${topicData.groupId}:topics:*`)
+    await cacheService.deletePattern(`group:${topicData.groupId}`)
   return topic
 }
 
@@ -84,22 +92,28 @@ export const deleteTopicRepository = async (id: string): Promise<boolean> => {
   if (!Types.ObjectId.isValid(id)) {
     throw new Error('ID de tema inválido')
   }
-  
+
+  // Obtener el topic antes de eliminarlo para acceder al groupId
   const topic = await GroupTopic.findById(id)
   if (!topic) {
     return false
   }
+
+  // Decrementar contador de posts del grupo antes de eliminar
+  await decrementGroupPostCountRepository(topic.groupId.toString())
+
+  const result = await GroupTopic.findByIdAndDelete(id)
   
-  await GroupTopic.findByIdAndDelete(id)
+  if (result) {
+    await cacheService.deletePattern(`group:${result.groupId}:topics:*`)
+    await cacheService.deletePattern(`group:${result.groupId}`)
+    return true
+  }
   
-  await cacheService.delete(`topic:${id}`)
-  
-  await cacheService.deletePattern(`group:${topic.groupId}:topics:*`)
-  
-  return true
+  return false
 }
 
-export const incrementPostCountRepository = async (topicId: string): Promise<void> => {
+export const incrementChatCountRepository = async (topicId: string): Promise<void> => {
   if (!Types.ObjectId.isValid(topicId)) {
     throw new Error('ID de tema inválido')
   }
@@ -107,7 +121,7 @@ export const incrementPostCountRepository = async (topicId: string): Promise<voi
   await GroupTopic.findByIdAndUpdate(
     topicId,
     { 
-      $inc: { postsCount: 1 },
+      $inc: { chatCount: 1 },
       lastActivity: new Date()
     }
   )
@@ -118,18 +132,44 @@ export const incrementPostCountRepository = async (topicId: string): Promise<voi
   ])
 }
 
-export const decrementPostCountRepository = async (topicId: string): Promise<void> => {
+export const decrementChatCountRepository = async (topicId: string): Promise<void> => {
   if (!Types.ObjectId.isValid(topicId)) {
     throw new Error('ID de tema inválido')
   }
   
   await GroupTopic.findByIdAndUpdate(
     topicId,
-    { $inc: { postsCount: -1 } }
+    { $inc: { chatCount: -1 } }
   )
   
   await cacheService.deleteMany([
     `topic:${topicId}`,
     `group:*:topics:*`
   ])
+}
+
+export const incrementGroupPostCountRepository = async (groupId: string): Promise<void> => {
+  if (!Types.ObjectId.isValid(groupId)) {
+    throw new Error('ID de grupo inválido')
+  }
+  
+  await Group.findByIdAndUpdate(
+    groupId,
+    { $inc: { postsCount: 1 } }
+  )
+  
+  await cacheService.deletePattern(`group:${groupId}:*`)
+}
+
+export const decrementGroupPostCountRepository = async (groupId: string): Promise<void> => {
+  if (!Types.ObjectId.isValid(groupId)) {
+    throw new Error('ID de grupo inválido')
+  }
+  
+  await Group.findByIdAndUpdate(
+    groupId,
+    { $inc: { postsCount: -1 } }
+  )
+  
+  await cacheService.deletePattern(`group:${groupId}:*`)
 }

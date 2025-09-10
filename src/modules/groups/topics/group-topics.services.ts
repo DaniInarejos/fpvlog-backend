@@ -127,9 +127,8 @@ export const deleteTopicService = async (topicId: string, userId: string): Promi
   if (!membership) {
     throw new Error('No eres miembro de este grupo')
   }
-  
   // Solo el creador, admins u owners pueden eliminar
-  const canDelete = topic.createdBy.toString() === userId || 
+  const canDelete = topic.createdBy._id.toString() === userId || 
                    ['OWNER', 'ADMIN'].includes(membership.role)
   
   if (!canDelete) {

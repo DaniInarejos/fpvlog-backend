@@ -19,7 +19,7 @@ export const addMemberRepository = async (groupId: string, userId: string, role:
     await Group.findByIdAndUpdate(groupId, { $inc: { membersCount: 1 } })
   }
   
-  await cacheService.deleteMany([`group:${groupId}:members`, `user:${userId}:groups`])
+  await cacheService.deleteMany([`group:${groupId}:members`, `user:${userId}:groups`, `group:${groupId}`])
   
   return member
 }
@@ -86,7 +86,7 @@ export const updateMemberRoleRepository = async (groupId: string, userId: string
   ).populate('userId', 'username name lastName profilePicture')
   
   if (member) {
-    await cacheService.deleteMany([`group:${groupId}:members`, `user:${userId}:groups`])
+    await cacheService.deleteMany([`group:${groupId}:members`, `user:${userId}:groups`, `group:${groupId}`])
   }
   
   return member
@@ -104,7 +104,7 @@ export const removeMemberRepository = async (groupId: string, userId: string): P
   }
   
   if (result) {
-    await cacheService.deleteMany([`group:${groupId}:members`, `user:${userId}:groups`])
+    await cacheService.deleteMany([`group:${groupId}:members`, `user:${userId}:groups`, `group:${groupId}`])
   }
   
   return result !== null
@@ -123,7 +123,13 @@ export const findUserGroupsRepository = async (userId: string) => {
         userId, 
         role: { $nin: ['BANNED', 'PENDING'] } 
       })
-      .populate('groupId')
+      .populate({
+        path: 'groupId',
+        populate: {
+          path: 'createdBy',
+          select: 'username'
+        }
+      })
       .sort({ joinedAt: -1 })
       
       return memberships.map(membership => ({

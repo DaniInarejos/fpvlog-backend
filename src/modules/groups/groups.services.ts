@@ -100,7 +100,7 @@ export const deleteGroupService = async (groupId: string, userId: string): Promi
     throw new Error('Solo el propietario puede eliminar el grupo')
   }
   
-  const deleted = await groupRepository.deleteGroupRepository(groupId)
+  const deleted = await groupRepository.deleteGroupRepository(groupId,userId)
   
   if (!deleted) {
     throw new Error('Grupo no encontrado')

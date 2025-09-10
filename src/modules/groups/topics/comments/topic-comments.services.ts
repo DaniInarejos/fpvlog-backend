@@ -205,7 +205,7 @@ export const deleteTopicCommentService = async (
       throw new Error('Topic no encontrado')
     }
 
-    const isAuthor = comment.authorId.toString() === userId
+    const isAuthor = comment.authorId._id.toString() === userId
     const membership = await getMemberService(topic.groupId._id.toString(), userId)
     const isAdmin = membership && ['ADMIN', 'OWNER'].includes(membership.role)
 
