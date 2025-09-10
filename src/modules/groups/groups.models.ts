@@ -47,7 +47,7 @@ const groupSchema = new Schema<IGroup>({
   },
   membersCount: {
     type: Number,
-    default: 1
+    default: 0
   },
   postsCount: {
     type: Number,
