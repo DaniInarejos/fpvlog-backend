@@ -6,7 +6,7 @@ type CreateSpotData = Omit<ISpot, '_id' | 'createdAt'>
 type UpdateSpotData = Partial<CreateSpotData>
 
 export const findAllSpotsRepository = async () => {
-  return await Spot.find().sort({ createdAt: -1 })
+  return await Spot.find().sort({ createdAt: -1 as const })
 }
 
 export const findSpotByIdRepository = async (id: string) => {
@@ -16,7 +16,7 @@ export const findSpotByIdRepository = async (id: string) => {
 
 export const findSpotsByUserRepository = async (userId: string) => {
   if (!Types.ObjectId.isValid(userId)) return []
-  return await Spot.find({ submittedBy: userId }).sort({ createdAt: -1 })
+  return await Spot.find({ submittedBy: userId }).sort({ createdAt: -1 as const })
 }
 
 export const createSpotRepository = async (data: CreateSpotData) => {

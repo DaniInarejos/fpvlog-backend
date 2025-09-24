@@ -516,6 +516,73 @@ export const components = {
         }
       },
       required: ['_id', 'groupId', 'userId', 'role', 'joinedAt']
+    },
+    EquipmentItem: {
+      type: 'object',
+      properties: {
+        _id: {
+          type: 'string',
+          description: 'ID único del elemento de equipamiento'
+        },
+        userId: {
+          type: 'string',
+          description: 'ID del usuario propietario'
+        },
+        name: {
+          type: 'string',
+          description: 'Nombre del equipamiento',
+          maxLength: 100
+        },
+        brand: {
+          type: 'string',
+          description: 'Marca del equipamiento',
+          maxLength: 50,
+          nullable: true
+        },
+        type: {
+          type: 'string',
+          enum: ['DRONE', 'CONTROLLER', 'BATTERY', 'CHARGER', 'CAMERA', 'GIMBAL', 'PROPELLER', 'CASE', 'TOOL', 'ACCESSORY', 'OTHER'],
+          description: 'Tipo de equipamiento'
+        },
+        status: {
+          type: 'string',
+          enum: ['ACTIVE', 'INACTIVE', 'MAINTENANCE', 'SOLD', 'LOST', 'DAMAGED'],
+          description: 'Estado del equipamiento'
+        },
+        image: {
+          type: 'string',
+          format: 'uri',
+          description: 'URL de la imagen del equipamiento',
+          nullable: true
+        },
+        notes: {
+          type: 'string',
+          description: 'Notas adicionales sobre el equipamiento',
+          nullable: true
+        },
+        favorite: {
+          type: 'boolean',
+          description: 'Indica si el elemento está marcado como favorito',
+          default: false
+        },
+        productLink: {
+          type: 'string',
+          format: 'uri',
+          description: 'URL del producto',
+          nullable: true
+        },
+        createdAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de creación'
+        },
+        updatedAt: {
+          type: 'string',
+          format: 'date-time',
+          description: 'Fecha de última actualización'
+        }
+      },
+      required: ['_id', 'userId', 'name', 'type', 'status', 'favorite', 'createdAt', 'updatedAt']
     }
   }
 }

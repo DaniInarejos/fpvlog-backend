@@ -8,6 +8,22 @@ import {
   updateProfilePictureRepository
  } from './users.repository'
 import { uploadImageService } from '../../utils/image.service'
+import { 
+  getEquipmentItemsByUserService,
+  getEquipmentItemsByUserAndTypeService,
+  getEquipmentItemsByUserAndStatusService,
+  getEquipmentItemStatsService,
+  toggleEquipmentItemFavoriteService
+} from '../equipmentItems/equipmentItems.services'
+
+// Re-exportar servicios de equipmentItems para usar en controladores de users
+export {
+  getEquipmentItemsByUserService,
+  getEquipmentItemsByUserAndTypeService,
+  getEquipmentItemsByUserAndStatusService,
+  getEquipmentItemStatsService,
+  toggleEquipmentItemFavoriteService
+}
 
 export async function getAllUsersService(): Promise<IUser[]> {
   return await getAllUsersRepository()

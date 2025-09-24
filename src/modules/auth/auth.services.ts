@@ -42,26 +42,29 @@ export const register = async (userData: RegisterDTO): Promise<{ user: IUser; to
     // Automáticamente unir al usuario al grupo por defecto
     try {
       if (Types.ObjectId.isValid(DEFAULT_GROUP_ID)) {
-        await addMemberRepository(DEFAULT_GROUP_ID, user._id.toString(), 'MEMBER')
+        await addMemberRepository(DEFAULT_GROUP_ID, (user._id as any).toString(), 'MEMBER')
       }
-    } catch (groupError) {
+    } catch (groupError: unknown) {
       // Log el error pero no fallar el registro si hay problemas con el grupo
-      console.warn(`No se pudo agregar el usuario al grupo por defecto: ${groupError.message}`)
+      const errorMessage = groupError instanceof Error ? groupError.message : 'Unknown error'
+      console.warn(`No se pudo agregar el usuario al grupo por defecto: ${errorMessage}`)
     }
 
     const token = generateToken(user)
 
     // Send welcome email (non-blocking)
-    sendWelcomeEmail(user.email, user.username).catch(error => {
-      console.warn(`Failed to send welcome email to ${user.email}:`, error.error || error.message)
+    sendWelcomeEmail(user.email, user.username).catch((error: unknown) => {
+      const errorMessage = error instanceof Error ? (error as any).error || error.message : 'Unknown error'
+      console.warn(`Failed to send welcome email to ${user.email}:`, errorMessage)
     })
 
-    const userResponse = user.toObject()
+    const userResponse = user.toObject() as any
     delete userResponse.password
 
     return { user: userResponse, token }
-  } catch (error) {
-    throw new Error(`Registration error: ${error.message}`)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`Registration error: ${errorMessage}`)
   }
 }
 
@@ -122,11 +125,13 @@ export const requestPasswordReset = async (data: RequestPasswordResetDTO): Promi
     await user.save()
 
     // Enviar email (non-blocking)
-    sendPasswordResetEmail(user.email, user.username, resetToken).catch(error => {
-      console.warn(`Failed to send password reset email to ${user.email}:`, error.error || error.message)
+    sendPasswordResetEmail(user.email, user.username, resetToken).catch((error: unknown) => {
+      const errorMessage = error instanceof Error ? (error as any).error || error.message : 'Unknown error'
+      console.warn(`Failed to send password reset email to ${user.email}:`, errorMessage)
     })
-  } catch (error) {
-    throw new Error(`Password reset request error: ${error.message}`)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`Password reset request error: ${errorMessage}`)
   }
 }
 
@@ -146,8 +151,9 @@ export const resetPassword = async (data: ResetPasswordDTO): Promise<void> => {
     user.resetPasswordToken = undefined
     user.resetPasswordExpires = undefined
     await user.save()
-  } catch (error) {
-    throw new Error(`Password reset error: ${error.message}`)
+  } catch (error: unknown) {
+    const errorMessage = error instanceof Error ? error.message : 'Unknown error'
+    throw new Error(`Password reset error: ${errorMessage}`)
   }
 }
 

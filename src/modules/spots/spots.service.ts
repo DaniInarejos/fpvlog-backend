@@ -23,12 +23,12 @@ export const getSpotsByUserService = async (userId: string) => {
 }
 
 export const createSpotService = async (data: unknown) => {
-  return await createSpotRepository(data)
+  return await createSpotRepository(data as any)
 }
 
 export const updateSpotService = async (id: string, data: unknown) => {
 
-  const updatedSpot = await updateSpotRepository(id, data)
+  const updatedSpot = await updateSpotRepository(id, data as any)
   if (!updatedSpot) throw new Error('Spot no encontrado')
   return updatedSpot 
 }

@@ -12,6 +12,7 @@ export interface IFlight extends Document {
   userId: Types.ObjectId
   droneId: Types.ObjectId
   spotId?: Types.ObjectId
+  equipmentItems?: Types.ObjectId[]
   createdAt: Date
   visibility: {
     isVisibleToFollowers: boolean
@@ -54,6 +55,10 @@ const flightSchema = new Schema<IFlight>({
     type: Schema.Types.ObjectId,
     ref: 'Spot'
   },
+  equipmentItems: [{
+    type: Schema.Types.ObjectId,
+    ref: 'EquipmentItem'
+  }],
   visibility: {
     isVisibleToFollowers: {
       type: Boolean,

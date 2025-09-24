@@ -3,6 +3,7 @@ import * as topicRepository from './group-topics.repository'
 import * as memberRepository from '../members/group-members.repository'
 import * as groupService from '../groups.services'
 import { z } from 'zod'
+import { Types } from 'mongoose'
 
 const createTopicSchema = z.object({
   title: z.string().min(1, 'El título es requerido').max(500, 'El título es muy largo'),
@@ -25,8 +26,8 @@ export const createTopicService = async (groupId: string, userId: string, topicD
   
   const topic = await topicRepository.createTopicRepository({
     ...validatedData,
-    groupId,
-    createdBy: userId
+    groupId: new Types.ObjectId(groupId),
+    createdBy: new Types.ObjectId(userId)
   })
   
   return topic

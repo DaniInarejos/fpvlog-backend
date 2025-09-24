@@ -64,113 +64,6 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
             }
           }
         ],
-        drones: [
-          {
-            $lookup: {
-              from: 'drones',
-              let: { 
-                userId: '$_id',
-                username: '$username',
-                profilePicture: '$profilePicture'
-              },
-              pipeline: [
-                {
-                  $match: {
-                    $expr: { $eq: ['$userId', '$$userId'] },
-                    ...query.drones,
-                    ...timeQuery
-                  }
-                },
-                {
-                  $lookup: {
-                    from: 'dronetypes',
-                    localField: 'typeId',
-                    foreignField: '_id',
-                    as: 'droneType'
-                  }
-                },
-                { $unwind: { path: '$droneType', preserveNullAndEmptyArrays: true } },
-                {
-                  $lookup: {
-                    from: 'dronebrands',
-                    localField: 'brandId',
-                    foreignField: '_id',
-                    as: 'droneBrand'
-                  }
-                },
-                { $unwind: { path: '$droneBrand', preserveNullAndEmptyArrays: true } },
-                {
-                  $lookup: {
-                    from: 'likes',
-                    let: { droneId: '$_id' },
-                    pipeline: [
-                      {
-                        $match: {
-                          $expr: {
-                            $and: [
-                              { $eq: ['$targetId', '$$droneId'] },
-                              { $eq: ['$targetType', 'drone'] }
-                            ]
-                          }
-                        }
-                      },
-                      {
-                        $lookup: {
-                          from: 'users',
-                          localField: 'userId',
-                          foreignField: '_id',
-                          as: 'user'
-                        }
-                      },
-                      { $unwind: '$user' },
-                      {
-                        $project: {
-                          _id:0,
-                          userId: '$user._id',
-                        }
-                      }
-                    ],
-                    as: 'likes'
-                  }
-                },
-                {
-                  $project: {
-                    type: { $literal: 'drone' },
-                    data: {
-                      name: '$name',
-                      model: '$model',
-                      serialNumber: '$serialNumber',
-                      weight: '$weight',
-                      frameSize: '$frameSize',
-                      notes: '$notes',
-                      description: '$description',
-                      image: '$image',
-                      visibility: '$visibility',
-                      droneType: {
-                        name: '$droneType.name',
-                        category: '$droneType.category'
-                      },
-                      droneBrand: {
-                        name: '$droneBrand.name',
-                        country: '$droneBrand.country'
-                      },
-                      user: {
-                        username: '$$username',
-                        profilePicture: '$$profilePicture'
-                      },
-                      likes: '$likes',
-                      createdAt: '$createdAt'
-                    },
-                    createdAt: '$createdAt'
-                  }
-                }
-              ],
-              as: 'drones'
-            }
-          },
-          { $unwind: '$drones' },
-          { $replaceRoot: { newRoot: '$drones' } }
-        ],
         flights: [
           {
             $lookup: {
@@ -347,7 +240,7 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
     {
       $project: {
         items: {
-          $concatArrays: ['$users', '$drones', '$flights', '$spots']
+          $concatArrays: ['$users', '$flights', '$spots']
         }
       }
     },
@@ -358,20 +251,6 @@ export const getFeedItemsAggregation = (query: any, page: number, limit: number,
     { $limit: limit }
   ]
 }
-
-export const getTotalDronesAggregation = (query: any) => [
-  { $match: query.users },
-  {
-    $lookup: {
-      from: 'drones',
-      let: { userId: '$_id' },
-      pipeline: [{ $match: { $expr: { $eq: ['$userId', '$$userId'] }, ...query.drones } }],
-      as: 'drones'
-    }
-  },
-  { $project: { count: { $size: '$drones' } } },
-  { $group: { _id: null, total: { $sum: '$count' } } }
-]
 
 export const getTotalFlightsAggregation = (query: any) => [
   { $match: query.users },

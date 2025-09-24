@@ -331,5 +331,86 @@ export const usersOpenApiDef = {
         }
       }
     }
+  },
+  "/users/{id}/equipment-items/{equipmentItemId}/favorite": {
+    patch: {
+      summary: "Alternar estado favorito de un elemento de equipamiento",
+      security: [{ bearerAuth: [] }],
+      tags: ["Usuarios"],
+      parameters: [
+        {
+          name: "id",
+          in: "path",
+          required: true,
+          schema: { type: "string" },
+          description: "ID del usuario"
+        },
+        {
+          name: "equipmentItemId",
+          in: "path",
+          required: true,
+          schema: { type: "string" },
+          description: "ID del elemento de equipamiento"
+        }
+      ],
+      responses: {
+        "200": {
+          description: "Estado favorito actualizado exitosamente",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  message: { type: "string" },
+                  favorite: { type: "boolean" },
+                  equipmentItem: {
+                    $ref: "#/components/schemas/EquipmentItem"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          description: "Error en la solicitud",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  error: { type: "string" }
+                }
+              }
+            }
+          }
+        },
+        "403": {
+          description: "No autorizado para modificar este elemento",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  error: { type: "string" }
+                }
+              }
+            }
+          }
+        },
+        "404": {
+          description: "Usuario o elemento de equipamiento no encontrado",
+          content: {
+            "application/json": {
+              schema: {
+                type: "object",
+                properties: {
+                  error: { type: "string" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
   }
 }

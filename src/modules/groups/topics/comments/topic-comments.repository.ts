@@ -64,7 +64,7 @@ export const findTopicCommentsRepository = async (
             parentId: null // Solo comentarios principales
           })
           .populate('authorId', 'username profilePicture')
-          .sort({ createdAt: -1 })
+          .sort({ createdAt: -1 as const })
           .skip(skip)
           .limit(limit)
           .lean(),
@@ -113,7 +113,7 @@ export const findTopicCommentRepliesRepository = async (
             parentId: new Types.ObjectId(commentId)
           })
           .populate('authorId', 'username profilePicture')
-          .sort({ createdAt: 1 })
+          .sort({ createdAt: 1 as const })
           .skip(skip)
           .limit(limit)
           .lean(),

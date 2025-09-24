@@ -44,7 +44,7 @@ export const findGroupTopicsRepository = async (groupId: string, page = 1, limit
       const [topics, total] = await Promise.all([
         GroupTopic.find({ groupId })
           .populate('createdBy', 'username name lastName profilePicture')
-          .sort({ isPinned: -1, lastActivity: -1 })
+          .sort({ isPinned: -1 as const, lastActivity: -1 as const })
           .skip(skip)
           .limit(limit),
         GroupTopic.countDocuments({ groupId })

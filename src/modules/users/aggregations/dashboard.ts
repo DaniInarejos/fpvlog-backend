@@ -28,21 +28,6 @@ const projectUser = {
   }
 }
 
-const lookupDrones = {
-  $lookup: {
-    from: 'drones',
-    let: { userId: '$_id' },
-    pipeline: [
-      { $match: { $expr: { $eq: ['$userId', '$$userId'] } } },
-      { $lookup: { from: 'dronebrands', localField: 'brandId', foreignField: '_id', as: 'brand' } },
-      { $lookup: { from: 'dronetypes', localField: 'typeId', foreignField: '_id', as: 'type' } },
-      lookupLikes('_id', 'drone'),
-      { $unwind: { path: '$brand', preserveNullAndEmptyArrays: true } },
-      { $unwind: { path: '$type', preserveNullAndEmptyArrays: true } }
-    ],
-    as: 'drones'
-  }
-}
 
 const lookupFlights = {
   $lookup: {
@@ -50,11 +35,9 @@ const lookupFlights = {
     let: { userId: '$_id' },
     pipeline: [
       { $match: { $expr: { $eq: ['$userId', '$$userId'] } } },
-      { $sort: { createdAt: -1 } },
+      { $sort: { createdAt: -1 as const } },
       { $limit: 5 },
-      { $lookup: { from: 'drones', localField: 'droneId', foreignField: '_id', as: 'drone' } },
-      lookupLikes('_id', 'flight'),
-      { $unwind: { path: '$drone', preserveNullAndEmptyArrays: true } }
+      lookupLikes('_id', 'flight')
     ],
     as: 'flights'
   }
@@ -96,14 +79,12 @@ const projectDashboard = {
       socialMedia: '$socialMedia'
     },
     stats: {
-      dronesCount: { $size: '$drones' },
       flightsCount: { $size: '$flights' },
       spotsCount: { $size: '$spots' },
       followersCount: { $ifNull: [{ $arrayElemAt: ['$followersCount.total', 0] }, 0] },
       followingCount: { $ifNull: [{ $arrayElemAt: ['$followingCount.total', 0] }, 0] }
     },
     flights: 1,
-    drones: 1,
     spots: 1
   }
 }
@@ -112,7 +93,6 @@ export const dashboardAggregation = (username: string): PipelineStage[] => [
   { $match: { username } },
   projectUser,
   lookupLikes('_id', 'user'),
-  lookupDrones,
   lookupFlights,
   lookupSpots,
   lookupFollowers('following'),

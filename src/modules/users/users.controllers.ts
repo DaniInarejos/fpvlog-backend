@@ -5,11 +5,18 @@ import {
   updateUserService, 
   deleteUserService,
   getDashboardDataService,
-  uploadProfileImageService
+  uploadProfileImageService,
+  toggleEquipmentItemFavoriteService
 } from './users.services'
 import { getErrorMessage } from '../../utils/error'
-import { findComponentsByUserGroupedRepository } from '../components/components.repository'
 import { getUserGroupsService } from '../groups/members/group-members.services'
+import { 
+  getEquipmentItemsByUserService,
+  getEquipmentItemsByUserAndTypeService,
+  getEquipmentItemsByUserAndStatusService,
+  getEquipmentItemStatsService
+} from '../equipmentItems/equipmentItems.services'
+import { EquipmentType, EquipmentStatus } from '../equipmentItems/equipmentItems.models'
 
 export async function getAllUsersController(context: Context): Promise<Response> {
   try {
@@ -49,6 +56,73 @@ export async function updateUserController(context: Context): Promise<Response> 
     return context.json(user)
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 400)
+  }
+}
+
+export const getEquipmentItemsByUserController = async (context: Context): Promise<Response> => {
+  try {
+    const userId = context.req.param('id')
+    const { type, status } = context.req.query()
+    const currentUser = context.get('user')
+    
+    // Verificar que el usuario solo pueda ver sus propios equipmentItems
+    if (currentUser._id.toString() !== userId) {
+      return context.json({ error: 'No autorizado para ver los equipmentItems de este usuario' }, 403)
+    }
+    
+    let equipmentItems
+    
+    if (type && Object.values(EquipmentType).includes(type as EquipmentType)) {
+      equipmentItems = await getEquipmentItemsByUserAndTypeService(userId, type as EquipmentType)
+    } else if (status && Object.values(EquipmentStatus).includes(status as EquipmentStatus)) {
+      equipmentItems = await getEquipmentItemsByUserAndStatusService(userId, status as EquipmentStatus)
+    } else {
+      equipmentItems = await getEquipmentItemsByUserService(userId)
+    }
+    
+    return context.json({
+      success: true,
+      data: equipmentItems,
+      timestamp: new Date().toISOString()
+    })
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : 'Error interno del servidor'
+    const statusCode = errorMessage.includes('inválido') ? 400 : 500
+    
+    return context.json({
+      success: false,
+      error: errorMessage,
+      timestamp: new Date().toISOString()
+    }, statusCode as any)
+  }
+}
+
+export const getEquipmentItemStatsController = async (c: Context) => {
+  try {
+    const userId = c.req.param('id')
+   const currentUser = c.get('user')
+
+    // Verificar autorización
+    if (userId !== currentUser._id.toString()) {
+      return c.json({ error: 'No autorizado' }, 403)
+    }
+
+    const stats = await getEquipmentItemStatsService(userId)
+    return c.json(stats)
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500)
+  }
+}
+
+export const toggleEquipmentItemFavoriteController = async (c: Context) => {
+  try {
+    const equipmentItemId = c.req.param('equipmentItemId')
+    const userId = c.get('userId')
+
+    const updatedEquipmentItem = await toggleEquipmentItemFavoriteService(equipmentItemId, userId)
+    return c.json(updatedEquipmentItem)
+  } catch (error) {
+    return c.json({ error: getErrorMessage(error) }, 500)
   }
 }
 
@@ -119,17 +193,6 @@ export const uploadProfileImageController = async (context: Context): Promise<Re
     })
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 400)
-  }
-}
-
-export const getUserComponentsController = async (context: Context) => {
-  const userId = context.req.param('id')
-  
-  try {
-    const components = await findComponentsByUserGroupedRepository(userId)
-    return context.json(components)
-  } catch (error) {
-    return context.json({ error: 'Error al obtener los componentes del usuario' }, 500)
   }
 }
 

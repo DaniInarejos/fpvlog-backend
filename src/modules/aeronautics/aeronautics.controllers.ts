@@ -50,11 +50,11 @@ export const getAeronauticsDataController = async (c: Context) => {
       success: false, 
       error: errorMessage,
       timestamp: new Date().toISOString()
-    }, statusCode);
+    }, statusCode as any);
   }
 };
 
-export const refreshAeronauticsDataController = async (context: Context) => {
+export const refreshAeronauticsDataController = async (c: Context) => {
   try {
     console.log('🔄 Iniciando refresh manual de datos aeronáuticos...');
     const startTime = Date.now();
@@ -64,7 +64,7 @@ export const refreshAeronauticsDataController = async (context: Context) => {
     const processingTime = Date.now() - startTime;
     console.log(`✅ Refresh completado en ${processingTime}ms`);
     
-    return context.json({
+    return c.json({
       success: true,
       message: 'Datos actualizados correctamente',
       processingTime: `${processingTime}ms`,
@@ -85,10 +85,10 @@ export const refreshAeronauticsDataController = async (context: Context) => {
       }
     }
     
-    return context.json({
+    return c.json({
       success: false,
       error: errorMessage,
       timestamp: new Date().toISOString()
-    }, statusCode);
+    }, statusCode as any);
   }
 };

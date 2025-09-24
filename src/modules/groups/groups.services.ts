@@ -3,6 +3,7 @@ import { GroupRole } from './members/group-members.models'
 import * as groupRepository from './groups.repository'
 import * as memberRepository from './members/group-members.repository'
 import { z } from 'zod'
+import { Types } from 'mongoose'
 
 const createGroupSchema = z.object({
   name: z.string().min(1, 'El nombre es requerido').max(100, 'El nombre es muy largo'),
@@ -25,11 +26,11 @@ export const createGroupService = async (userId: string, groupData: unknown): Pr
   
   const group = await groupRepository.createGroupRepository({
     ...validatedData,
-    createdBy: userId as any
+    createdBy: new Types.ObjectId(userId)
   })
   
   // Agregar al creador como OWNER
-  await memberRepository.addMemberRepository(group._id.toString(), userId, 'OWNER')
+  await memberRepository.addMemberRepository((group._id as any).toString(), userId, 'OWNER')
   
   return group
 }

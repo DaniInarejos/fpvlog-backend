@@ -2,7 +2,6 @@ import { Types } from 'mongoose'
 import UserModel from '../users/users.models'
 import { 
   getFeedItemsAggregation, 
-  getTotalDronesAggregation, 
   getTotalFlightsAggregation, 
   getTotalSpotsAggregation
  } from './feeds.aggregations'
@@ -10,14 +9,13 @@ import {
 const getFeedItems = async (query: any, page: number, limit: number, lastTimestamp?: string) => {
   const items = await UserModel.aggregate(getFeedItemsAggregation(query, page, limit, lastTimestamp))
   // Contar totales
-  const [totalUsers, totalDrones, totalFlights, totalSpots] = await Promise.all([
+  const [totalUsers, totalFlights, totalSpots] = await Promise.all([
     UserModel.countDocuments(query.users),
-    UserModel.aggregate(getTotalDronesAggregation(query)).then(result => (result[0]?.total || 0)),
     UserModel.aggregate(getTotalFlightsAggregation(query)).then(result => (result[0]?.total || 0)),
     UserModel.aggregate(getTotalSpotsAggregation(query)).then(result => (result[0]?.total || 0))
   ])
 
-  const totalItems = totalUsers + totalDrones + totalFlights + totalSpots
+  const totalItems = totalUsers + totalFlights + totalSpots
   const totalPages = Math.ceil(totalItems / limit)
   const hasNextPage = page < totalPages
   const nextTimestamp = items.length > 0 ? items[items.length - 1].createdAt.toISOString() : null
@@ -40,7 +38,6 @@ export const getGlobalFeedRepository = async (page: number = 1, limit: number = 
 
  const query = {
         flights: { 'visibility.isPublic': true },
-        drones: { 'visibility.isPublic': true },
         users: { 'privacySettings.profileVisibility': 'public' },
         spots: { 'visibility.public': true },
 
@@ -63,12 +60,6 @@ export const getFollowingFeedRepository = async (userId: string, page: number = 
 
      const query = {
   flights: {
-    $or: [
-      { userId: { $in: user.following }, 'visibility.isVisibleToFollowers': true },
-      { userId: { $in: user.following }, 'visibility.isPublic': true }
-    ]
-  },
-  drones: {
     $or: [
       { userId: { $in: user.following }, 'visibility.isVisibleToFollowers': true },
       { userId: { $in: user.following }, 'visibility.isPublic': true }
