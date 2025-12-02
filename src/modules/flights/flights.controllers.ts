@@ -6,7 +6,7 @@ import {
   deleteFlightService,
   createFlightService,
   getFlightsByUserService,
-  uploadFlightImageService
+  uploadFlightPosterService
 } from './flights.services'
 import { getErrorMessage } from '../../utils/error'
 
@@ -109,7 +109,7 @@ export async function deleteFlightController(context: Context): Promise<Response
   }
 }
 
-export async function uploadFlightImageController(context: Context): Promise<Response> {
+export async function uploadFlightPosterController(context: Context): Promise<Response> {
   try {
     const id = context.req.param('id')
     const user = context.get('user')
@@ -124,12 +124,12 @@ export async function uploadFlightImageController(context: Context): Promise<Res
     }
 
     const body = await context.req.parseBody()
-    const file = body.image
+    const file = body.poster
 
     if (!file || !(file instanceof File)) {
-      return context.json({ error: 'No se proporcionó ninguna imagen válida' }, 400)
+      return context.json({ error: 'No se proporcionó ninguna imagen válida para el poster' }, 400)
     }
-    const flight = await uploadFlightImageService(id, file)
+    const flight = await uploadFlightPosterService(id, file)
     return context.json(flight)
   } catch (error) {
     return context.json({ error: getErrorMessage(error) }, 400)

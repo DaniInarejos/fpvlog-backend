@@ -61,11 +61,11 @@ export const getVisibleFlightsService = async (
           throw new Error('Usuario no encontrado')
         }
 
-        // Aplicar filtros de privacidad
-        if (userIsFollowing && owner.privacySettings?.allowFollowersToSeeFlights) {
-          query['visibility.isVisibleToFollowers'] = true
+        // Aplicar filtros de privacidad usando el nuevo campo visibility
+        if (userIsFollowing) {
+          query.visibility = { $in: ['followers', 'public'] }
         } else {
-          query['visibility.isPublic'] = true
+          query.visibility = 'public'
         }
       }
     } else {
@@ -78,9 +78,9 @@ export const getVisibleFlightsService = async (
           { userId: viewerId }, // Sus propios vuelos
           {
             userId: { $in: followingIds },
-            'visibility.isVisibleToFollowers': true
+            visibility: { $in: ['followers', 'public'] }
           },
-          { 'visibility.isPublic': true }
+          { visibility: 'public' }
         ]
       }
     }
@@ -103,11 +103,11 @@ export const getVisibleFlightsService = async (
   }
 }
 
-export async function uploadFlightImageService(id: string, file: File): Promise<IFlight | null> {
-  const imageUrl = await uploadImageService(file, {
-    folder: 'flights',
-    fileName: `flight-${id}`,
+export async function uploadFlightPosterService(id: string, file: File): Promise<IFlight | null> {
+  const posterUrl = await uploadImageService(file, {
+    folder: 'flights/posters',
+    fileName: `flight-poster-${id}`,
     maxSizeInMB: 5
   })
-  return await updateFlightRepository(id, { image: imageUrl })
+  return await updateFlightRepository(id, { posterUrl })
 }

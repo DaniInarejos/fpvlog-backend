@@ -99,10 +99,11 @@ export const getVisibleFlightsRepository = async (
 ) => {
   const flights = await FlightModel.find(query)
     .populate('userId', 'username name lastName')
-    .populate('droneId', 'name model')
+    .populate('spotId', 'name location')
+    .populate('equipmentItems', 'name type model')
     .skip(skip)
     .limit(limit)
-    .sort({ createdAt: -1 })
+    .sort({ recordedAt: -1, createdAt: -1 })
     .select('-__v')
 
   const total = await FlightModel.countDocuments(query)

@@ -43,24 +43,64 @@ export const flightsOpenApiDef = {
           "application/json": {
             schema: {
               type: "object",
-              required: ["title", "date", "location", "duration", "batteryUsed", "weather", "droneId"],
+              required: ["title", "videoUrl"],
               properties: {
-                title: { type: "string" },
-                date: { type: "string", format: "date-time" },
-                location: { type: "string" },
-                duration: { type: "number", minimum: 0 },
-                batteryUsed: { type: "number", minimum: 0 },
-                weather: { type: "string" },
-                notes: { type: "string" },
-                droneId: { type: "string" },
-                spotId: { type: "string" },
-                urlVideo: { type: "string" },
+                title: { 
+                  type: "string",
+                  maxLength: 160,
+                  description: "Título del vuelo"
+                },
+                description: { 
+                  type: "string",
+                  description: "Descripción opcional del vuelo"
+                },
+                videoUrl: { 
+                  type: "string",
+                  format: "uri",
+                  description: "URL del vídeo (YouTube, Vimeo, etc.)"
+                },
+                posterUrl: { 
+                  type: "string",
+                  format: "uri",
+                  description: "URL del poster/thumbnail opcional"
+                },
+                tags: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Etiquetas del vuelo"
+                },
+                disciplines: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    enum: ["freestyle", "racing", "cinewhoop", "long-range", "other"]
+                  },
+                  description: "Disciplinas del vuelo"
+                },
+                recordedAt: { 
+                  type: "string", 
+                  format: "date-time",
+                  description: "Fecha real de grabación"
+                },
                 visibility: {
-                  type: "object",
-                  properties: {
-                    isVisibleToFollowers: { type: "boolean" },
-                    isPublic: { type: "boolean" }
-                  }
+                  type: "string",
+                  enum: ["private", "followers", "public"],
+                  default: "public",
+                  description: "Visibilidad del vuelo"
+                },
+                spotId: { 
+                  type: "string",
+                  description: "ID del spot donde se grabó"
+                },
+                equipmentItems: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "IDs de los equipos utilizados"
+                },
+                featured: {
+                  type: "boolean",
+                  default: false,
+                  description: "Marcar como destacado para portfolio"
                 }
               }
             }
@@ -104,12 +144,13 @@ export const flightsOpenApiDef = {
           name: "id",
           in: "path",
           required: true,
-          schema: { type: "string" }
+          schema: { type: "string" },
+          description: "ID del vuelo"
         }
       ],
       responses: {
         "200": {
-          description: "Vuelo encontrado",
+          description: "Vuelo obtenido exitosamente",
           content: {
             "application/json": {
               schema: {
@@ -130,23 +171,10 @@ export const flightsOpenApiDef = {
               }
             }
           }
-        },
-        "403": {
-          description: "No autorizado para ver este vuelo",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  error: { type: "string" }
-                }
-              }
-            }
-          }
         }
       }
     },
-    patch: {
+    put: {
       summary: "Actualizar un vuelo",
       security: [{ bearerAuth: [] }],
       tags: ["Vuelos"],
@@ -155,7 +183,8 @@ export const flightsOpenApiDef = {
           name: "id",
           in: "path",
           required: true,
-          schema: { type: "string" }
+          schema: { type: "string" },
+          description: "ID del vuelo"
         }
       ],
       requestBody: {
@@ -165,21 +194,60 @@ export const flightsOpenApiDef = {
             schema: {
               type: "object",
               properties: {
-                title: { type: "string" },
-                date: { type: "string", format: "date-time" },
-                location: { type: "string" },
-                duration: { type: "number", minimum: 0 },
-                batteryUsed: { type: "number", minimum: 0 },
-                weather: { type: "string" },
-                notes: { type: "string" },
-  spotId: { type: "string" },
-  urlVideo: { type: "string" }, 
+                title: { 
+                  type: "string",
+                  maxLength: 160,
+                  description: "Título del vuelo"
+                },
+                description: { 
+                  type: "string",
+                  description: "Descripción opcional del vuelo"
+                },
+                videoUrl: { 
+                  type: "string",
+                  format: "uri",
+                  description: "URL del vídeo (YouTube, Vimeo, etc.)"
+                },
+                posterUrl: { 
+                  type: "string",
+                  format: "uri",
+                  description: "URL del poster/thumbnail opcional"
+                },
+                tags: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "Etiquetas del vuelo"
+                },
+                disciplines: {
+                  type: "array",
+                  items: {
+                    type: "string",
+                    enum: ["freestyle", "racing", "cinewhoop", "long-range", "other"]
+                  },
+                  description: "Disciplinas del vuelo"
+                },
+                recordedAt: { 
+                  type: "string", 
+                  format: "date-time",
+                  description: "Fecha real de grabación"
+                },
                 visibility: {
-                  type: "object",
-                  properties: {
-                    isVisibleToFollowers: { type: "boolean" },
-                    isPublic: { type: "boolean" }
-                  }
+                  type: "string",
+                  enum: ["private", "followers", "public"],
+                  description: "Visibilidad del vuelo"
+                },
+                spotId: { 
+                  type: "string",
+                  description: "ID del spot donde se grabó"
+                },
+                equipmentItems: {
+                  type: "array",
+                  items: { type: "string" },
+                  description: "IDs de los equipos utilizados"
+                },
+                featured: {
+                  type: "boolean",
+                  description: "Marcar como destacado para portfolio"
                 }
               }
             }
@@ -199,19 +267,6 @@ export const flightsOpenApiDef = {
         },
         "404": {
           description: "Vuelo no encontrado",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  error: { type: "string" }
-                }
-              }
-            }
-          }
-        },
-        "403": {
-          description: "No autorizado para actualizar este vuelo",
           content: {
             "application/json": {
               schema: {
@@ -280,9 +335,9 @@ export const flightsOpenApiDef = {
       }
     }
   },
-  "/flights/{id}/image": {
+  "/flights/{id}/poster": {
     post: {
-      summary: "Subir una imagen para un vuelo",
+      summary: "Subir poster para un vuelo",
       security: [{ bearerAuth: [] }],
       tags: ["Vuelos"],
       parameters: [
@@ -290,21 +345,22 @@ export const flightsOpenApiDef = {
           name: "id",
           in: "path",
           required: true,
-          schema: { type: "string" }
+          schema: { type: "string" },
+          description: "ID del vuelo"
         }
       ],
       requestBody: {
         required: true,
         content: {
-          "multipart/form-data": {
+          "application/json": {
             schema: {
               type: "object",
-              required: ["image"],
+              required: ["poster"],
               properties: {
-                image: {
+                poster: { 
                   type: "string",
-                  format: "binary",
-                  description: "Archivo de imagen a subir"
+                  format: "uri",
+                  description: "URL del poster/thumbnail"
                 }
               }
             }
@@ -313,7 +369,7 @@ export const flightsOpenApiDef = {
       },
       responses: {
         "200": {
-          description: "Imagen subida exitosamente",
+          description: "Poster subido exitosamente",
           content: {
             "application/json": {
               schema: {
@@ -322,34 +378,8 @@ export const flightsOpenApiDef = {
             }
           }
         },
-        "400": {
-          description: "Imagen inválida",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  error: { type: "string" }
-                }
-              }
-            }
-          }
-        },
         "404": {
           description: "Vuelo no encontrado",
-          content: {
-            "application/json": {
-              schema: {
-                type: "object",
-                properties: {
-                  error: { type: "string" }
-                }
-              }
-            }
-          }
-        },
-        "403": {
-          description: "No autorizado para actualizar este vuelo",
           content: {
             "application/json": {
               schema: {

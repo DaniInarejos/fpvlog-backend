@@ -145,28 +145,72 @@ export const components = {
       type: "object",
       properties: {
         _id: { type: "string" },
-        title: { type: "string" },
-        description: { type: "string" },
-        date: { type: "string", format: "date-time" },
-        location: { type: "string" },
-        duration: { type: "number", minimum: 0 },
-        batteryUsed: { type: "number", minimum: 0 },
-        weather: { type: "string" },
-        notes: { type: "string", nullable: true },
         userId: { type: "string" },
-        droneId: { type: "string" },
         spotId: { type: "string", nullable: true },
-        urlVideo: { type: "string", nullable: true },
-        createdAt: { type: "string", format: "date-time" },
-        visibility: {
-          type: "object",
-          properties: {
-            isVisibleToFollowers: { type: "boolean" },
-            isPublic: { type: "boolean" }
-          }
+        equipmentItems: {
+          type: "array",
+          items: { type: "string" },
+          description: "IDs de los equipos utilizados"
         },
-        image: { type: "string", nullable: true }
-      }
+        title: { 
+          type: "string",
+          maxLength: 160,
+          description: "Título del vuelo"
+        },
+        description: { 
+          type: "string",
+          description: "Descripción opcional del vuelo",
+          nullable: true
+        },
+        videoUrl: { 
+          type: "string",
+          format: "uri",
+          description: "URL del vídeo (YouTube, Vimeo, etc.)"
+        },
+        posterUrl: { 
+          type: "string",
+          format: "uri",
+          description: "URL del poster/thumbnail opcional",
+          nullable: true
+        },
+        tags: {
+          type: "array",
+          items: { type: "string" },
+          description: "Etiquetas del vuelo"
+        },
+        disciplines: {
+          type: "array",
+          items: {
+            type: "string",
+            enum: ["freestyle", "racing", "cinewhoop", "long-range", "other"]
+          },
+          description: "Disciplinas del vuelo"
+        },
+        recordedAt: { 
+          type: "string", 
+          format: "date-time",
+          description: "Fecha real de grabación",
+          nullable: true
+        },
+        visibility: {
+          type: "string",
+          enum: ["private", "followers", "public"],
+          default: "public",
+          description: "Visibilidad del vuelo"
+        },
+        slug: { 
+          type: "string",
+          description: "Slug único del vuelo"
+        },
+        featured: {
+          type: "boolean",
+          default: false,
+          description: "Marcar como destacado para portfolio"
+        },
+        createdAt: { type: "string", format: "date-time" },
+        updatedAt: { type: "string", format: "date-time" }
+      },
+      required: ["_id", "userId", "title", "videoUrl", "visibility", "slug"]
     },
     Follower: {
       type: "object",

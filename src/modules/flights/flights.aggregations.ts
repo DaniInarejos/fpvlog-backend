@@ -22,8 +22,26 @@ export const getFlightsByUserAggregation = (userId: Types.ObjectId):PipelineStag
         }
       },
       {
+        $lookup: {
+          from: 'spots',
+          localField: 'spotId',
+          foreignField: '_id',
+          as: 'spot'
+        }
+      },
+      {
+        $lookup: {
+          from: 'equipmentitems',
+          localField: 'equipmentItems',
+          foreignField: '_id',
+          as: 'equipment'
+        }
+      },
+      {
         $addFields: {
-          likesCount: { $size: '$likes' }
+          likesCount: { $size: '$likes' },
+          spot: { $arrayElemAt: ['$spot', 0] },
+          equipment: '$equipment'
         }
       },
       {
@@ -31,5 +49,5 @@ export const getFlightsByUserAggregation = (userId: Types.ObjectId):PipelineStag
           likes: 0
         }
       },
-      { $sort: { createdAt: -1 } }
+      { $sort: { recordedAt: -1, createdAt: -1 } }
     ]

@@ -5,7 +5,7 @@ import {
   updateFlightController,
   deleteFlightController,
   createFlightController,
-  uploadFlightImageController
+  uploadFlightPosterController
 } from './flights.controllers'
 import { authMiddleware } from '../../middlewares/auth.middleware'
 
@@ -18,6 +18,6 @@ router.get('/', getAllFlightsController)
 router.get('/:id', getFlightByIdController)
 router.patch('/:id', updateFlightController)
 router.delete('/:id', deleteFlightController)
-router.post('/:id/image', uploadFlightImageController)
+router.post('/:id/poster', uploadFlightPosterController)
 
 export default router
