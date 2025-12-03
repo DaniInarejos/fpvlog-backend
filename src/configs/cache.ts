@@ -1,13 +1,13 @@
-import { Redis } from '@upstash/redis'
+import { createClient, RedisClientType } from 'redis'
 import { logger } from '../utils/logger'
 import config from './index'
 
 type MemoryEntry = { value: unknown; expiresAt: number }
 
-let client: Redis | null = null
-if (config.redis.url && config.redis.token) {
+let client: RedisClientType | null = null
+if (config.redis.url) {
   try {
-    client = new Redis({ url: config.redis.url, token: config.redis.token })
+    client = createClient({ url: config.redis.url })
   } catch {
     client = null
   }
@@ -19,6 +19,7 @@ async function testConnection(): Promise<void> {
     return
   }
   try {
+    await client.connect()
     await client.ping()
     logger.info('✅ Redis connection established successfully')
   } catch (error) {
@@ -44,8 +45,9 @@ export class CacheService {
   async get<T>(key: string): Promise<T | null> {
     if (client) {
       try {
-        const value = await client.get<T>(key)
-        return (value as T | null) ?? null
+        const raw = await client.get(key)
+        if (raw == null) return null
+        return deserialize<T>(raw)
       } catch {}
     }
     const entry = this.memory.get(key)
@@ -61,7 +63,7 @@ export class CacheService {
     const ttl = options?.ttl || this.defaultTTL
     if (client) {
       try {
-        await client.set(key, value, { ex: ttl })
+        await client.set(key, serialize(value), { EX: ttl })
       } catch {}
     }
     this.memory.set(key, { value, expiresAt: this.now() + ttl * 1000 })
@@ -90,7 +92,7 @@ export class CacheService {
       try {
         const keys = await client.keys(pattern)
         if (keys.length > 0) {
-          await client.del(...keys)
+          await client.del(keys)
         }
       } catch (error) {
         logger.error('Error deleting cache pattern:', error)
@@ -105,7 +107,7 @@ export class CacheService {
   async clear(): Promise<void> {
     if (client) {
       try {
-        await client.flushall()
+        await client.flushAll()
       } catch {}
     }
     this.memory.clear()
@@ -130,6 +132,18 @@ export class CacheService {
 
 function escapeRegex(input: string): string {
   return input.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+}
+
+function serialize<T>(value: T): string {
+  return JSON.stringify(value)
+}
+
+function deserialize<T>(raw: string): T {
+  try {
+    return JSON.parse(raw) as T
+  } catch {
+    return raw as unknown as T
+  }
 }
 
 export const cacheService = new CacheService()
